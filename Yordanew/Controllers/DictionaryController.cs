@@ -1,0 +1,160 @@
+using System.ComponentModel.DataAnnotations;
+using InertiaCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Yordanew.Domain.Entity;
+using Yordanew.Domain.ValueObjects;
+using Yordanew.Models;
+using Yordanew.Services;
+
+namespace Yordanew.Controllers;
+
+public class DictionaryController(
+    UserManager<AppUser> userManager,
+    LanguageService languageService,
+    DictionaryService dictionaryService
+) : Controller {
+    
+    [HttpGet("/languages/{id:guid}/dictionary")]
+    public async Task<IActionResult> Index(Guid id) {
+        var language = await languageService.GetById(id);
+        if (language is null) return NotFound();
+        
+        return Inertia.Render("Dictionary/Index", new {
+            Language = language
+        });
+    }
+    
+    [Authorize]
+    [HttpGet("/languages/{id:guid}/dictionary/create")]
+    public async Task<IActionResult> Create(Guid id) {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var language = await languageService.GetById(id);
+        if (language is null) return NotFound();
+        if (user.Id != language.AuthorId) return Unauthorized();
+        
+        return Inertia.Render("Dictionary/Create", new {
+            Language = language
+        });
+    }
+
+    public class CreateLexemeRequest {
+        public Guid? Id { get; set; }
+        public string? Path { get; set; } = "1.1";
+        public string? Article { get; set; }
+    }
+
+    public class CreateDictionaryRequest {
+        [Required(ErrorMessage = "Поле обязательное"), MinLength(1)]
+        public Guid? Id { get; set; }
+        public required string Vocabula { get; set; }
+        public string? Transcription { get; set; }
+        public string? Adaptation { get; set; }
+        public IList<CreateLexemeRequest> Lexemes { get; set; } = new List<CreateLexemeRequest>();
+    }
+    
+    [Authorize]
+    [HttpPost("/languages/{id:guid}/dictionary/create")]
+    public async Task<IActionResult> Store(Guid id, [FromBody] CreateDictionaryRequest request) {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var language = await languageService.GetById(id);
+        if (language is null) return NotFound();
+        if (user.Id != language.AuthorId) return Unauthorized();
+
+        if (ModelState.IsValid) {
+            var article = new Article(new Transcriptable(request.Vocabula, request.Transcription, request.Adaptation)) {
+                LanguageId = language.Id,
+            };
+            foreach (var requestLexeme in request.Lexemes) {
+                var indexes = requestLexeme.Path?.Split('.').Select(int.Parse) ?? [];
+                var lexeme = new Lexeme(new RichText(requestLexeme.Article ?? "")) {
+                    Path = indexes.ToList()
+                };
+                article.AddLexeme(lexeme);
+            }
+
+            await dictionaryService.Insert(article);
+            return Inertia.Location($"/dictionary/{article.Id}");
+        }
+        
+        return Inertia.Render("Dictionary/Create", new {
+            Language = language
+        });
+    }
+    
+    [HttpGet("/dictionary/{id:guid}")]
+    public async Task<IActionResult> View(Guid id) {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var article = await dictionaryService.GetById(id);
+        if (article is null) return NotFound();
+        var language = await languageService.GetById(article.LanguageId);
+        if (language is null) return NotFound();
+        if (user.Id != language.AuthorId && !language.IsPublished) return Unauthorized();
+        
+        return Inertia.Render("Dictionary/View", new {
+            Language = language,
+            Article = article,
+        });
+    }
+    
+    [HttpGet("/dictionary/{id:guid}/edit")]
+    public async Task<IActionResult> Edit(Guid id) {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var article = await dictionaryService.GetById(id);
+        if (article is null) return NotFound();
+        var language = await languageService.GetById(article.LanguageId);
+        if (language is null) return NotFound();
+        if (user.Id != language.AuthorId && !language.IsPublished) return Unauthorized();
+        
+        return Inertia.Render("Dictionary/Edit", new {
+            Language = language,
+            Article = article,
+        });
+    }
+    
+    [HttpPost("/dictionary/{id:guid}/edit")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] CreateDictionaryRequest request) {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var earticle = await dictionaryService.GetById(id);
+        if (earticle is null) return NotFound();
+        var language = await languageService.GetById(earticle.LanguageId);
+        if (language is null) return NotFound();
+        if (user.Id != language.AuthorId && !language.IsPublished) return Unauthorized();
+        
+        if (ModelState.IsValid) {
+            var article = new Article(new Transcriptable(request.Vocabula, request.Transcription, request.Adaptation)) {
+                Id = earticle.Id,
+                LanguageId = earticle.LanguageId,
+                Lexemes = earticle.Lexemes.ToList()
+            };
+            foreach (var requestLexeme in request.Lexemes) {
+                var indexes = requestLexeme.Path?.Split('.').Select(int.Parse) ?? [];
+                var lexeme = new Lexeme(new RichText(requestLexeme.Article ?? "")) {
+                    Id = requestLexeme.Id ?? Guid.CreateVersion7(),
+                    Description = new RichText(requestLexeme.Article?? ""),
+                    Path = indexes.ToList()
+                };
+                article.AddLexeme(lexeme);
+            }
+
+            await dictionaryService.Update(article); 
+            return Inertia.Location($"/dictionary/{article.Id}");
+        }
+        
+        return Inertia.Location($"/dictionary/{id}");
+    }
+    
+    private AppUser? GetCurrentUser() {
+        var name = HttpContext.User.Identity?.Name;
+        if (name is null) {
+            return null;
+        }
+        return userManager.Users.FirstOrDefault(u => u.UserName == name);
+    }
+}

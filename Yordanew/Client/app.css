@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@font-face {
+    font-family: "Aquawax Fx Trial";
+    src: url("/Aquawax-Fx-Variable-trial.ttf");
+}
+
+@theme {
+    --font-inter: "Inter", var(--font-sans);
+    --font-yordan: "Aquawax Fx Trial", sans-serif;
+}
+
+@layer base {
+    html {
+        min-height: 100dvh;
+    }
+    
+    .ProseMirror ul:not([data-type="taskList"]) {
+        @apply list-disc pl-6;
+    }
+
+    .ProseMirror ol {
+        @apply list-decimal pl-6;
+    }
+
+    .ProseMirror a {
+        @apply underline text-indigo-800 hover:text-indigo-700 dark:text-indigo-500 dark:hover:text-indigo-400 cursor-pointer;
+    }
+
+    .ProseMirror h1 {
+        @apply text-3xl font-bold mt-4 mb-2;
+    }
+
+    .ProseMirror h2 {
+        @apply text-2xl font-semibold mt-4 mb-2;
+    }
+
+    .ProseMirror h3 {
+        @apply text-xl font-medium mt-4 mb-2;
+    }
+
+    .ProseMirror h4 {
+        @apply text-lg font-medium mt-3 mb-1;
+    }
+
+    .ProseMirror h5 {
+        @apply font-medium mt-2 mb-1;
+    }
+
+    .ProseMirror pre, .ProseMirror code:not(pre code) {
+        @apply p-1 bg-zinc-300/30 dark:bg-zinc-700/30 rounded-sm;
+    }
+
+    .ProseMirror [data-type='taskList'] li {
+        @apply flex;
+    }
+
+    .ProseMirror [data-type='taskList'] label {
+        @apply me-2;
+    }
+
+    .tiptap {
+        @apply outline-0;
+    }
+}

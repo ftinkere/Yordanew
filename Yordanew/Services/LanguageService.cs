@@ -1,4 +1,4 @@
-using LinqToDB;
+using Microsoft.EntityFrameworkCore;
 using Yordanew.Models;
 using Yordanew.Domain.Entity;
 
@@ -7,7 +7,7 @@ namespace Yordanew.Services;
 public class LanguageService(AppDbContext db) {
     public async Task<Language> Insert(Language language) {
         // TODO: articles and other
-        return (await db.Languages.AddAsync(new LanguageDbo {
+        var ret = (await db.Languages.AddAsync(new LanguageDbo {
             Id = language.Id,
             AuthorId = language.AuthorId,
             Name = language.Name.Content,
@@ -18,10 +18,17 @@ public class LanguageService(AppDbContext db) {
             CreatedAt = language.CreatedAt,
             EditorsIds = language.EditorsIds.ToArray(),
         })).Entity.ToDomain();
+
+        await db.SaveChangesAsync();
+        
+        return ret;
     }
 
     public async Task<Language?> GetById(Guid id) {
-        return (await db.Languages.FirstOrDefaultAsync(l => l.Id == id))?.ToDomain();
+        return (await db.Languages
+            .Include(l => l.Author)
+            .FirstOrDefaultAsync(l => l.Id == id))?
+            .ToDomain();
     }
 
     public async Task<Language> Update(Language language) {

@@ -10,10 +10,6 @@
 
     <ItemGroup>
         <PackageReference Include="AspNetCore.InertiaCore" Version="0.0.9" />
-        <PackageReference Include="linq2db" Version="5.4.1" />
-        <PackageReference Include="linq2db.AspNet" Version="5.4.1" />
-        <PackageReference Include="linq2db.Identity" Version="4.0.0" />
-        <PackageReference Include="linq2db.PostgreSQL" Version="5.4.1" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.0-rc.2.24474.3"/>
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0-rc.2.24474.3"/>
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.0-rc.2.24474.3"/>
@@ -36,6 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Migrations\" />
       <Folder Include="wwwroot\build\" />
     </ItemGroup>
 

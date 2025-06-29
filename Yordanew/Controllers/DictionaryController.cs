@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Yordanew.Domain.Entity;
 using Yordanew.Domain.ValueObjects;
+using Yordanew.Dtos;
 using Yordanew.Models;
 using Yordanew.Services;
 
@@ -22,7 +23,7 @@ public class DictionaryController(
         if (language is null) return NotFound();
         
         return Inertia.Render("Dictionary/Index", new {
-            Language = language
+            Language = language.ToDto()
         });
     }
     
@@ -36,7 +37,7 @@ public class DictionaryController(
         if (user.Id != language.AuthorId) return Unauthorized();
         
         return Inertia.Render("Dictionary/Create", new {
-            Language = language
+            Language = language.ToDto()
         });
     }
 
@@ -47,8 +48,8 @@ public class DictionaryController(
     }
 
     public class CreateDictionaryRequest {
-        [Required(ErrorMessage = "Поле обязательное"), MinLength(1)]
         public Guid? Id { get; set; }
+        [Required(ErrorMessage = "Поле обязательное"), MinLength(1)]
         public required string Vocabula { get; set; }
         public string? Transcription { get; set; }
         public string? Adaptation { get; set; }
@@ -70,7 +71,9 @@ public class DictionaryController(
             };
             foreach (var requestLexeme in request.Lexemes) {
                 var indexes = requestLexeme.Path?.Split('.').Select(int.Parse) ?? [];
-                var lexeme = new Lexeme(new RichText(requestLexeme.Article ?? "")) {
+                var lexeme = new Lexeme {
+                    ArticleId = article.Id,
+                    Description = new RichText(requestLexeme.Article ?? string.Empty),
                     Path = indexes.ToList()
                 };
                 article.AddLexeme(lexeme);
@@ -81,7 +84,7 @@ public class DictionaryController(
         }
         
         return Inertia.Render("Dictionary/Create", new {
-            Language = language
+            Language = language.ToDto()
         });
     }
     
@@ -96,8 +99,8 @@ public class DictionaryController(
         if (user.Id != language.AuthorId && !language.IsPublished) return Unauthorized();
         
         return Inertia.Render("Dictionary/View", new {
-            Language = language,
-            Article = article,
+            Language = language.ToDto(),
+            Article = article.ToDto(),
         });
     }
     
@@ -112,8 +115,8 @@ public class DictionaryController(
         if (user.Id != language.AuthorId && !language.IsPublished) return Unauthorized();
         
         return Inertia.Render("Dictionary/Edit", new {
-            Language = language,
-            Article = article,
+            Language = language.ToDto(),
+            Article = article.ToDto(),
         });
     }
     
@@ -135,9 +138,10 @@ public class DictionaryController(
             };
             foreach (var requestLexeme in request.Lexemes) {
                 var indexes = requestLexeme.Path?.Split('.').Select(int.Parse) ?? [];
-                var lexeme = new Lexeme(new RichText(requestLexeme.Article ?? "")) {
+                var lexeme = new Lexeme {
                     Id = requestLexeme.Id ?? Guid.CreateVersion7(),
-                    Description = new RichText(requestLexeme.Article?? ""),
+                    ArticleId = article.Id,
+                    Description = new RichText(requestLexeme.Article ?? ""),
                     Path = indexes.ToList()
                 };
                 article.AddLexeme(lexeme);

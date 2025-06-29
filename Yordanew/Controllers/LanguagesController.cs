@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Yordanew.Domain.Entity;
 using Yordanew.Domain.ValueObjects;
+using Yordanew.Dtos;
 using Yordanew.Models;
 using Yordanew.Services;
 
@@ -18,8 +19,8 @@ public class LanguagesController(
     public async Task<IActionResult> Index() {
         var user = GetCurrentUser();
         
-        var publishedLanguages = await languageService.GetPublished();
-        var ownLanguages = user is null ? new List<Language>() : (await languageService.GetOwn(user.Id));
+        var publishedLanguages = (await languageService.GetPublished()).Select(l => l.ToDto());
+        var ownLanguages = user is null ? new List<LanguageDto>() : (await languageService.GetOwn(user.Id)).Select(l => l.ToDto());
         return Inertia.Render("Languages/Index", new {
             PublishedLanguages = publishedLanguages,
             OwnLanguages = ownLanguages,
@@ -52,10 +53,10 @@ public class LanguagesController(
 
     [HttpGet("/languages/{id}")]
     public async Task<IActionResult> View(Guid id) {
-        var language = await languageService.GetById(id);
+        var language = (await languageService.GetById(id));
         if (language is null) return NotFound();
         return Inertia.Render("Languages/View", new {
-            Language = language
+            Language = language.ToDto()
         });
     }
 
@@ -69,7 +70,7 @@ public class LanguagesController(
         if (user.Id != language.AuthorId) return Unauthorized();
         
         return Inertia.Render("Languages/Edit", new {
-            Language = language
+            Language = language.ToDto()
         });
     }
 
@@ -100,7 +101,7 @@ public class LanguagesController(
         }
         
         return Inertia.Render("Languages/Edit", new {
-            Language = language
+            Language = language.ToDto()
         });
     }
 

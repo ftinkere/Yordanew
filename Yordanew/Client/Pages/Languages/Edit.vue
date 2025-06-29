@@ -13,11 +13,11 @@ provide('language', language);
 const errors = computed(() => usePage().props.errors)
 
 const state = reactive({
-    name: language.name.content,
-    autoname: language.name.translation,
-    autonameTranscription: language.name.transcription,
+    name: language.name,
+    autoname: language.autoName,
+    autonameTranscription: language.autoNameTranscription,
     isPublished: language.isPublished,
-    description: language.description.content,
+    description: language.description,
 })
 
 function create(event) {

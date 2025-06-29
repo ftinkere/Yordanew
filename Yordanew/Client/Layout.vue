@@ -51,7 +51,7 @@ const isMobileShowAside = ref(false);
             <UButton class="sm:hidden" variant="ghost" color="secondary" icon="i-lucide-menu" @click="isMobileShowAside = !isMobileShowAside" />           
             <slot name="top-left">
               <span v-if="language">
-                {{ language.name.translation }} /{{ language.name.transcription }}/ — {{ language.name.content }}
+                {{ language.autoName }} /{{ language.autoNameTranscription }}/ — {{ language.name }}
               </span>
             </slot>
           </div>

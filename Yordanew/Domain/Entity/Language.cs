@@ -1,6 +1,7 @@
 using YordanApi;
 using Yordanew.Models;
 using Yordanew.Domain.ValueObjects;
+using Yordanew.Dtos;
 
 namespace Yordanew.Domain.Entity;
 
@@ -9,12 +10,15 @@ public class Language {
     public required Translatable Name { get; set; }
     public RichText Description { get; set; } = new RichText("");
     public bool IsPublished { get; set; } = false;
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public required Guid AuthorId { get; set; }
     public IEnumerable<Guid> EditorsIds { get; set; } = new List<Guid>();
     public IEnumerable<PartOfSpeech> PartsOfSpeech { get; set; } = new List<PartOfSpeech>();
     public IEnumerable<Article> Articles { get; set; } = new List<Article>();
+    
+    public Author Author { get; set; }
+    
     
     public static Language Create(Guid authorId, Translatable name, bool isPublished = false) {
         return new Language { Name = name, IsPublished = isPublished, AuthorId = authorId};
@@ -52,6 +56,7 @@ public class Language {
             Name = Name,
             Description = Description,
             IsPublished = IsPublished,
+            Author = Author,
         };
     }
 
@@ -72,6 +77,7 @@ public static class LanguageExtensions {
             IsPublished = dbo.IsPublished,
             CreatedAt = dbo.CreatedAt,
             EditorsIds = dbo.EditorsIds?.ToList() ?? [],
+            Author = dbo.Author.ToDomain(),
             // TODO pos, articles
         };
     }

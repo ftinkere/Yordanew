@@ -12,7 +12,7 @@ using Yordanew;
 namespace Yordanew.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250625161338_InitialCreate")]
+    [Migration("20250629115446_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -223,6 +223,97 @@ namespace Yordanew.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Yordanew.Models.ArticleDbo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Adaptation")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("LanguageDboId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LanguageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Lemma")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Transcription")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LanguageDboId");
+
+                    b.ToTable("Articles");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.LanguageDbo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AutoName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AutoNameTranscription")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.PrimitiveCollection<Guid[]>("EditorsIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("Languages");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.LexemeDbo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ArticleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.PrimitiveCollection<int[]>("Path")
+                        .IsRequired()
+                        .HasColumnType("integer[]");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArticleId");
+
+                    b.ToTable("Lexemes");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -272,6 +363,45 @@ namespace Yordanew.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Yordanew.Models.ArticleDbo", b =>
+                {
+                    b.HasOne("Yordanew.Models.LanguageDbo", null)
+                        .WithMany("Articles")
+                        .HasForeignKey("LanguageDboId");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.LanguageDbo", b =>
+                {
+                    b.HasOne("Yordanew.Models.AppUser", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.LexemeDbo", b =>
+                {
+                    b.HasOne("Yordanew.Models.ArticleDbo", "Article")
+                        .WithMany("Lexemes")
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Article");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.ArticleDbo", b =>
+                {
+                    b.Navigation("Lexemes");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.LanguageDbo", b =>
+                {
+                    b.Navigation("Articles");
                 });
 #pragma warning restore 612, 618
         }

@@ -30,11 +30,11 @@ const languages = computed(() => isOwn.value ? ownLanguages : publishedLanguages
         <template #header>
           <Link :href="`/languages/${language.id}`">
             <UButton class="text-xl dark:text-neutral-200" variant="link" color="primary">
-              {{ language.name.content }}
+              {{ language.name }}
             </UButton>
           </Link>
         </template>
-        <div class="line-clamp-5" v-html="language.description.content"></div>
+        <div class="line-clamp-5" v-html="language.description"></div>
       </UCard>
     </div>
   </Layout>

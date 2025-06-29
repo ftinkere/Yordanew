@@ -13,7 +13,7 @@ const errors = computed(() => usePage().props.errors)
 provide('language', language)
 
 article.lexemes = article.lexemes.map(lexeme => {
-    lexeme.article = lexeme.description.content
+    lexeme.article = lexeme.description
     lexeme.path = lexeme.path.join('.')
     return lexeme
 })
@@ -23,9 +23,9 @@ function back() {
 }
 
 const state = reactive({
-    vocabula: article.lemma.content,
-    transcription: article.lemma.transcription,
-    adaptation: article.lemma.adaptation,
+    vocabula: article.lemma,
+    transcription: article.transcription,
+    adaptation: article.adaptation,
     lexemes: article.lexemes
 })
 
@@ -63,8 +63,8 @@ function edit(event) {
   <Layout>
     <template #top-left>
       <span v-if="language">
-        <span class="font-yordan">Словарь</span> {{ language.name.translation }} /{{ language.name.transcription }}/ — {{
-          language.name.content
+        <span class="font-yordan">Словарь</span> {{ language.autoName }} /{{ language.autoNameTranscription }}/ — {{
+          language.name
         }}
       </span>
     </template>

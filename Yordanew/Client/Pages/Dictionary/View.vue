@@ -48,7 +48,7 @@ onUnmounted(() => {
 
 <template>
   <Layout>
-    <template v-if="userId === language.authorId" #top-right>
+    <template v-if="userId === language.author.id" #top-right>
       <Link :href="`/dictionary/${article.id}/edit`">
         <UButton variant="soft" color="primary">Редактировать</UButton>
       </Link>
@@ -56,8 +56,8 @@ onUnmounted(() => {
     
     <div class="flex flex-col gap-2 divide-y divide-neutral-700">
       <div class="flex flex-col">
-        <span class="text-2xl">{{ article.lemma.content }} <span v-if="article.lemma.transcription">/{{ article.lemma.transcription }}/</span></span>
-        <span v-if="article.lemma.adaptation && article.lemma.adaptation !== article.lemma.content" class="text-neutral-400 dark:text-neutral-700 text-sm">{{ article.lemma.adaptation }}</span>
+        <span class="text-2xl">{{ article.lemma }} <span v-if="article.transcription">/{{ article.transcription }}/</span></span>
+        <span v-if="article.adaptation && article.adaptation !== article.lemma" class="text-neutral-400 dark:text-neutral-500 text-sm">{{ article.adaptation }}</span>
       </div>
 
       <div v-if="!lastVisible" class="p-4 flex flex-col gap-1">
@@ -74,7 +74,7 @@ onUnmounted(() => {
           <div class="font-bold float-left me-2">
             {{ lexeme.path?.join('.') }}
           </div>
-          <div class="ProseMirror" v-html="lexeme.description.content"></div>
+          <div class="ProseMirror" v-html="lexeme.description"></div>
         </div>
       </div>
     </div>

@@ -41,6 +41,7 @@ builder.Services.AddViteHelper(options => {
 builder.Services.AddScoped<FileService>();
 builder.Services.AddScoped<LanguageService>();
 builder.Services.AddScoped<DictionaryService>();
+builder.Services.AddScoped<AuthorService>();
 
 var app = builder.Build();
 

@@ -2,14 +2,21 @@
 import Layout from "../../Layout.vue";
 import { Link, usePage } from "@inertiajs/vue3";
 
+const auth = usePage().props.auth
 const user = usePage().props.user
 const languages = usePage().props.languages
 </script>
 
 <template>
   <Layout>
+    <template v-if="user.id === auth.user.id" #top-right>
+      <Link href="/profile/edit">
+        <UButton variant="soft" color="primary">Редактировать</UButton>
+      </Link>
+    </template>
+    
     <div class="flex flex-col items-center gap-2">
-      <UAvatar size="xl" :src="`/uploaded-files/avatars/${user.id}`" />
+      <UAvatar size="xl" :src="`/uploaded-files/avatars/${user.id}`" :alt="user.displayName ?? user.userName" />
       <span class="text-2xl">{{ user.displayName ?? user.userName }}</span>
     </div>
 

@@ -1,20 +1,20 @@
 namespace Yordanew.Services;
 
-public class FileService {
-    public static string GetAvatarPath(Guid userId) {
-        return Path.Combine("uploaded-files", "avatars", userId.ToString());
+public class FileService(IWebHostEnvironment env) {
+    public string GetAvatarPath(Guid userId) {
+        return Path.Combine(env.WebRootPath, "uploaded-files", "avatars", userId.ToString());
     }
 
-    public bool UploadAvatar(IFormFile file, Guid userId) {
-        if (file.Length <= 0 || file.ContentType.StartsWith("image/")) {
+    public async Task<bool> UploadAvatar(IFormFile file, Guid userId) {
+        if (file.Length <= 0 || !file.ContentType.StartsWith("image/")) {
             return false;
         }
 
         var path = GetAvatarPath(userId);
-        Directory.CreateDirectory(Path.Combine("uploaded-files", "avatars"));
+        Directory.CreateDirectory(Path.Combine(env.WebRootPath, "uploaded-files", "avatars"));
 
-        using var stream = new FileStream(path, FileMode.Create);
-        file.CopyTo(stream);
+        await using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
+        await file.CopyToAsync(stream);
 
         return true;
     }

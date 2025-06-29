@@ -21,11 +21,7 @@ public class ProfileController(
     public async Task<IActionResult> Index() {
         var user = await GetCurrentUser();
         if (user is null) return Unauthorized();
-        var languages = await languageService.GetOwn(user.Id);
-        return Inertia.Render("Profile/Index", new {
-            User = user.ToDomain().ToDto(),
-            Languages = languages.Select(l => l.ToDto())
-        });
+        return await View(user.Id);
     }
 
     [Authorize]
@@ -41,19 +37,21 @@ public class ProfileController(
     public class EditRequest {
         [Required(ErrorMessage = "Обязательное поле")]
         public required string DisplayName { get; set; }
+
+        public IFormFile? Avatar { get; set; }
     }
 
     [Authorize]
     [HttpPost("/profile/edit")]
-    public async Task<IActionResult> EditPost([FromForm] EditRequest request, IFormFile? avatar) {
+    public async Task<IActionResult> EditPost([FromForm] EditRequest request) {
         var user = await GetCurrentUser();
         if (user is null) return Unauthorized();
 
         if (ModelState.IsValid) {
             user.DisplayName = request.DisplayName;
             await userManager.UpdateAsync(user);
-            if (avatar is not null) {
-                fileService.UploadAvatar(avatar, user.Id);
+            if (request.Avatar is not null) {
+                fileService.UploadAvatar(request.Avatar, user.Id);
             }
             return Inertia.Location("/profile");
         }

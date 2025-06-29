@@ -7,11 +7,16 @@ const user = usePage().props.user
 const errors = computed(() => usePage().props.errors)
 
 const state = reactive({
-  displayName: user.displayName ?? ""
+    displayName: user.displayName ?? "",
+    avatar: null,
 })
 
+function handleFileChange(event) {
+    state.avatar = event.target.files?.[0] ?? null
+}
+
 function submit(event) {
-  router.post('/profile/edit', event.data, { forceFormData: true })
+    router.post('/profile/edit', event.data, { forceFormData: true })
 }
 </script>
 
@@ -27,11 +32,11 @@ function submit(event) {
       <span class="font-yordan text-3xl text-center w-full">Редактировать профиль</span>
 
       <UFormField name="displayName" label="Отображаемое имя" :error="errors?.displayName">
-        <UInput v-model="state.displayName" class="w-full" />
+        <UInput v-model="state.displayName" class="w-full"/>
       </UFormField>
 
       <UFormField name="avatar" label="Аватар">
-        <UInput type="file" name="avatar" />
+        <UInput type="file" name="avatar" @change="handleFileChange" />
       </UFormField>
 
       <UButton type="submit" class="w-full" variant="soft" color="success">Сохранить</UButton>

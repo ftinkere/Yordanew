@@ -1,6 +1,7 @@
 import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
 import ui from '@nuxt/ui/vue-plugin'
+import * as FilePond from 'filepond';
 import "./app.css"
 
 createInertiaApp({

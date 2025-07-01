@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Yordanew.Models;
 
+[Table("Languages")]
 public class LanguageDbo {
     public Guid Id { get; set; }
     [ForeignKey(nameof(Author))]

@@ -48,6 +48,10 @@ onUnmounted(() => {
 
 <template>
   <Layout>
+    <template #top-left>
+      <span class="font-yordan">Словарь</span>
+    </template>
+    
     <template v-if="userId === language.author.id" #top-right>
       <Link :href="`/dictionary/${article.id}/edit`">
         <UButton variant="soft" color="primary">Редактировать</UButton>

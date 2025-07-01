@@ -60,11 +60,7 @@ function create(event) {
 <template>
   <Layout>
     <template #top-left>
-      <span v-if="language">
-        <span class="font-yordan">Словарь</span> {{ language.autoName }} /{{ language.autoNameTranscription }}/ — {{
-          language.name
-        }}
-      </span>
+      <span class="font-yordan">Словарь</span>
     </template>
 
     <template v-if="userId" #top-right>

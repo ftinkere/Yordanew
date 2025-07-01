@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Yordanew.Models;
+using Yordanew.Services;
 
 namespace Yordanew.Controllers;
 
@@ -112,6 +113,4 @@ public class HomeController(
         await signInManager.SignOutAsync();
         return RedirectToAction("Index");
     }
-    
-    
 }

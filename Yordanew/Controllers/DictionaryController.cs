@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using InertiaCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -14,16 +15,17 @@ namespace Yordanew.Controllers;
 public class DictionaryController(
     UserManager<AppUser> userManager,
     LanguageService languageService,
-    DictionaryService dictionaryService
+    DictionaryService dictionaryService,
+    FileService fileService
 ) : Controller {
     
     [HttpGet("/languages/{id:guid}/dictionary")]
-    public async Task<IActionResult> Index(Guid id) {
-        var language = await languageService.GetById(id);
+    public async Task<IActionResult> Index(Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10) {
+        var language = await languageService.GetFullById(id, page, pageSize);
         if (language is null) return NotFound();
         
         return Inertia.Render("Dictionary/Index", new {
-            Language = language.ToDto()
+            Language = language.ToDto(page, pageSize, await languageService.CountArticles(language.Id) )
         });
     }
     
@@ -53,6 +55,8 @@ public class DictionaryController(
         public required string Vocabula { get; set; }
         public string? Transcription { get; set; }
         public string? Adaptation { get; set; }
+        
+        public IList<Guid>? AddFiles { get; set; } = new List<Guid>();
         public IList<CreateLexemeRequest> Lexemes { get; set; } = new List<CreateLexemeRequest>();
     }
     
@@ -151,7 +155,7 @@ public class DictionaryController(
             return Inertia.Location($"/dictionary/{article.Id}");
         }
         
-        return Inertia.Location($"/dictionary/{id}");
+        return Inertia.Location($"/dictionary/{id}/edit");
     }
     
     private AppUser? GetCurrentUser() {
@@ -160,5 +164,31 @@ public class DictionaryController(
             return null;
         }
         return userManager.Users.FirstOrDefault(u => u.UserName == name);
+    }
+    
+    [Authorize]
+    [HttpGet("/dictionary/files")]
+    public IActionResult FetchFile([FromQuery] Guid id) {
+        return PhysicalFile(Path.Combine(fileService.GetBasePath("dictionary"), id.ToString()), "application/octet-stream");
+    }
+    
+    
+    [Authorize]
+    [HttpPost("/dictionary/files")]
+    public async Task<IActionResult> UploadFile([FromForm] IFormFile file) {
+        return Ok((await fileService.UploadFilepondFile(file, "dictionary")).ToString());
+    }
+    
+    [Authorize]
+    [HttpDelete("/dictionary/files")]
+    public async Task<IActionResult> UploadFileRevert() {
+        using var reader = new StreamReader(Request.Body);
+        var rawBody = await reader.ReadToEndAsync();
+
+        // Убрать внешние кавычки и экранирование
+        var guid = JsonSerializer.Deserialize<string>(rawBody);
+        if (guid is null) return BadRequest();
+        fileService.DeleteFilepondFile(Guid.Parse(guid), "dictionary");
+        return Ok();
     }
 }

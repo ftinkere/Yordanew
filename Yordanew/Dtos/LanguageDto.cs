@@ -13,12 +13,16 @@ public class LanguageDto {
     public string? Description { get; set; }
     public bool IsPublished { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
+    
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 10;
+    public int TotalCount { get; set; } = 1;
 
     public ICollection<ArticleDto> Articles { get; set; } = [];
 }
 
 public static class LanguageDtoMapper {
-    public static LanguageDto ToDto(this Language language) {
+    public static LanguageDto ToDto(this Language language, int page = 1, int pageSize = 10, int totalCount = 0) {
         return new LanguageDto {
             Id = language.Id,
             Author = language.Author.ToDto(),
@@ -29,6 +33,10 @@ public static class LanguageDtoMapper {
             IsPublished = language.IsPublished,
             CreatedAt = language.CreatedAt,
             Articles = language.Articles.Select(a => a.ToDto()).ToList(),
+            
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
         };
     }
 }

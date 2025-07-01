@@ -1,12 +1,13 @@
 <script setup>
 import { inject, ref } from "vue";
 import { Link, usePage } from "@inertiajs/vue3";
+import LanguageName from "./Components/LanguageName.vue";
 
 const auth = usePage().props.auth;
 const language = inject('language');
 
-
 const isMobileShowAside = ref(false);
+
 </script>
 
 <template>
@@ -49,18 +50,17 @@ const isMobileShowAside = ref(false);
         <header class="sticky top-0 flex flex-row justify-between items-center px-2 w-full h-[44px] bg-black/10 backdrop-blur-md">
           <div class="flex flex-row items-center gap-2">
             <UButton class="sm:hidden" variant="ghost" color="secondary" icon="i-lucide-menu" @click="isMobileShowAside = !isMobileShowAside" />           
-            <slot name="top-left">
-              <span v-if="language">
-                {{ language.autoName }} /{{ language.autoNameTranscription }}/ — {{ language.name }}
-              </span>
-            </slot>
+            <slot name="top-left" />
+            <LanguageName v-if="language" :language="language" class="max-sm:hidden" />
           </div>
 
           <div class="justify-self-end">
             <slot name="top-right"/>
           </div>
         </header>
-        <div class="p-4 max-w-4xl w-full mx-auto">
+        <div class="flex flex-col gap-2 p-4 max-w-4xl w-full mx-auto">
+          <LanguageName v-if="language" :language="language" class="sm:hidden" />
+          
           <slot/>
         </div>
       </div>

@@ -25,10 +25,36 @@ public class LanguageService(AppDbContext db) {
     }
 
     public async Task<Language?> GetById(Guid id) {
-        return (await db.Languages
+        var query = db.Languages
             .Include(l => l.Author)
-            .FirstOrDefaultAsync(l => l.Id == id))?
-            .ToDomain();
+            .AsQueryable();
+
+        var entity = await query.FirstOrDefaultAsync(l => l.Id == id);
+        return entity?.ToDomain();
+    }
+
+    public async Task<Language?> GetFullById(Guid id, int page = 1, int pageSize = 10) {
+        var query = db.Languages
+            .Include(l => l.Author); 
+            
+        var entity = await query.FirstOrDefaultAsync(l => l.Id == id);
+
+        if (entity is null) return null;
+        
+        await db.Entry(entity)
+            .Collection(l => l.Articles)
+            .Query()
+            .Include(a => a.Lexemes)
+            .OrderBy(a => a.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .LoadAsync();
+        
+        return entity?.ToDomain();
+    }
+
+    public Task<int> CountArticles(Guid languageId) {
+        return db.Articles.CountAsync(a => a.LanguageId == languageId);
     }
 
     public async Task<Language> Update(Language language) {

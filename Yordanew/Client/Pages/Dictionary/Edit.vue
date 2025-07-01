@@ -1,9 +1,11 @@
 <script setup>
 import Layout from "../../Layout.vue";
 import { Link, router, usePage } from "@inertiajs/vue3";
-import { computed, provide, reactive } from "vue";
+import { computed, provide, reactive, ref, onMounted } from "vue";
 import XsampaToIpaButton from "../../Components/XsampaToIpaButton.vue";
 import Editor from "../../Components/Editor.vue";
+import 'filepond/dist/filepond.min.css';
+import * as FilePond from 'filepond';
 
 const language = usePage().props.language
 const article = usePage().props.article
@@ -26,7 +28,8 @@ const state = reactive({
     vocabula: article.lemma,
     transcription: article.transcription,
     adaptation: article.adaptation,
-    lexemes: article.lexemes
+    lexemes: article.lexemes,
+    addFiles: article.files ?? [],
 })
 
 function parsePath(path) {
@@ -52,21 +55,40 @@ function addLexeme() {
 }
 
 function edit(event) {
+    console.log(event.data);
     router.post(`/dictionary/${article.id}/edit`, event.data, {
         preserveState: true,
         preserveScroll: true,
     })
 }
+
+const disableFormSubmit = ref(false)
+
+const fileElement = ref(null)
+onMounted(() => {
+    const pond = FilePond.create(fileElement.value, {
+        allowMultiple: true,
+        storeAsFile: true,
+        server: "/dictionary/files",
+        onprocessfile: (error, file) => {
+            if (!error) {
+                state.addFiles.push(file.serverId)
+            }
+        },
+        onprocessfiles: () => {
+            disableFormSubmit.value = false
+        },
+        onaddfile: () => {
+            disableFormSubmit.value = true
+        }
+    })
+})
 </script>
 
 <template>
   <Layout>
     <template #top-left>
-      <span v-if="language">
-        <span class="font-yordan">Словарь</span> {{ language.autoName }} /{{ language.autoNameTranscription }}/ — {{
-          language.name
-        }}
-      </span>
+      <span class="font-yordan">Словарь</span>
     </template>
 
     <template v-if="userId" #top-right>
@@ -96,6 +118,10 @@ function edit(event) {
         <UInput icon="i-lucide-pencil-line" v-model="state.adaptation" class="w-full"/>
       </UFormField>
 
+      <div class="my-4">
+        <input ref="fileElement" class="filepond" name="file" type="file" multiple accept="image/*"/>
+      </div>
+
       <div class="-mx-4 p-4 flex flex-col gap-4 divide-y dark:divide-neutral-700 bg-black/20 rounded-lg">
         <span class="font-yordan text-center w-full">Лексемы</span>
 
@@ -123,7 +149,7 @@ function edit(event) {
         </div>
       </div>
 
-      <UButton type="submit" class="w-full" variant="soft" color="success">Обновить</UButton>
+      <UButton type="submit" class="w-full" variant="soft" color="success" :disabled="disableFormSubmit">Обновить</UButton>
 
     </UForm>
   </Layout>

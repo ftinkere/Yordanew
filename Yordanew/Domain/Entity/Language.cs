@@ -78,7 +78,7 @@ public static class LanguageExtensions {
             CreatedAt = dbo.CreatedAt,
             EditorsIds = dbo.EditorsIds?.ToList() ?? [],
             Author = dbo.Author.ToDomain(),
-            // TODO pos, articles
+            Articles = dbo.Articles.Select(a => a.ToDomain()).ToList(),
         };
     }
 }

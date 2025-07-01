@@ -22,6 +22,19 @@ public class DictionaryService(AppDbContext db) {
                 Path = lexeme.Path.ToArray(),
             });
         }
+        
+        foreach (var fileId in article.Files) {
+            var fileRelation = await db.FileRelations
+                .FirstOrDefaultAsync(fr => fr.EntityId == article.Id && fr.FileId == fileId);
+            if (fileRelation is null) {
+                await db.FileRelations.AddAsync(new FileRelationDbo {
+                    Id = Guid.NewGuid(),
+                    EntityId = article.Id,
+                    EntityName = nameof(ArticleDbo),
+                    FileId = fileId,
+                });
+            }
+        }
 
         await db.SaveChangesAsync();
 

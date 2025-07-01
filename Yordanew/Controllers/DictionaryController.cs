@@ -107,21 +107,19 @@ public class DictionaryController(
 
             var article = new Article(new Transcriptable(request.Vocabula, request.Transcription, request.Adaptation)) {
                 LanguageId = language.Id,
+                Files = request.AddFiles ?? [],
             };
             foreach (var requestLexeme in request.Lexemes) {
                 var indexes = requestLexeme.Path?.Split('.').Select(int.Parse).ToList();
                 var lexeme = new Lexeme {
                     ArticleId = article.Id,
                     Description = new RichText(requestLexeme.Description ?? string.Empty),
-                    Path = indexes?.ToList() ?? [1, 1]
+                    Path = indexes?.ToList() ?? [1, 1],
                 };
                 article.AddLexeme(lexeme);
             }
 
             await dictionaryService.Insert(article);
-            foreach (var fileId in request.AddFiles ?? new List<Guid>()) {
-                await fileService.LinkFile(fileId, article.Id, nameof(ArticleDbo));
-            }
             return Inertia.Location($"/dictionary/{article.Id}");
         }
 

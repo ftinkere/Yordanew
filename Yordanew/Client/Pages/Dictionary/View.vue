@@ -67,7 +67,7 @@ onUnmounted(() => {
 
       <div class="py-4 flex flex-row flex-wrap gap-2">
         <div v-for="fileId in article.files" :key="fileId">
-          <img :src="`/dictionary/files/${fileId}`" alt="Изображение статьи" class="w-32 rounded-lg" />
+          <img :src="`/dictionary/files/${fileId}`" alt="Изображение статьи" class="h-32 rounded-lg" />
         </div>
       </div>
       

@@ -19,11 +19,11 @@ function back() {
 }
 
 const state = reactive({
-    vocabula: article.value.lemma,
-    transcription: article.value.transcription,
-    adaptation: article.value.adaptation,
-    lexemes: article.value.lexemes,
-    addFiles: article.value.files ?? [],
+    vocabula: article.value?.lemma ?? "",
+    transcription: article.value?.transcription ?? "",
+    adaptation: article.value?.adaptation ?? "",
+    lexemes: article.value?.lexemes ?? [{ path: "1.1", description: '' }],
+    addFiles: article.value?.files ?? [],
 })
 
 function parsePath(path) {
@@ -48,8 +48,9 @@ function addLexeme() {
     })
 }
 
-function edit(event) {
-    router.post(`/dictionary/${article.value.id}/edit`, event.data, {
+function save(event) {
+    const data = { ...event.data, id: article.value?.id, languageId: language.value.id }
+    router.post('/dictionary/edit', data, {
         preserveState: true,
         preserveScroll: true,
     })
@@ -96,13 +97,16 @@ onMounted(() => {
     </template>
 
     <template v-if="userId" #top-right>
-      <Link :href="`/dictionary/${article.id}`">
+      <Link v-if="article" :href="`/dictionary/${article.id}`">
+        <UButton variant="soft" color="error">Отменить</UButton>
+      </Link>
+      <Link v-else :href="`/languages/${language.id}/dictionary`">
         <UButton variant="soft" color="error">Отменить</UButton>
       </Link>
     </template>
 
-    <UForm :state @submit="edit" class="flex flex-col gap-2 max-w-lg mx-auto">
-      <span class="font-yordan text-3xl text-center w-full">Изменить слово</span>
+    <UForm :state @submit="save" class="flex flex-col gap-2 max-w-lg mx-auto">
+      <span class="font-yordan text-3xl text-center w-full">{{ article ? 'Изменить слово' : 'Добавить слово' }}</span>
 
       <div class="grid grid-cols-2 gap-2">
         <UFormField name="vocabula" label="Написание" required :error="errors?.vocabula" class="w-full">
@@ -123,7 +127,7 @@ onMounted(() => {
       </UFormField>
 
       <div class="py-4 flex flex-row flex-wrap gap-2">
-        <div v-for="fileId in article.files" :key="fileId">
+        <div v-for="fileId in article?.files ?? []" :key="fileId">
           <div class="relative">
             <UButton variant="solid" color="error" icon="i-lucide-trash" class="absolute -end-4 -top-4 rounded-full" @click="fileDelete(fileId)"/>
             <img :src="`/dictionary/files/${fileId}`" alt="Изображение статьи" class="w-32 rounded-lg" />
@@ -162,7 +166,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <UButton type="submit" class="w-full" variant="soft" color="success" :disabled="disableFormSubmit">Обновить</UButton>
+      <UButton type="submit" class="w-full" variant="soft" color="success" :disabled="disableFormSubmit">{{ article ? 'Обновить' : 'Создать' }}</UButton>
 
     </UForm>
   </Layout>

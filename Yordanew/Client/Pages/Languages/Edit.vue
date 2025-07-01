@@ -13,30 +13,31 @@ provide('language', language);
 const errors = computed(() => usePage().props.errors)
 
 const state = reactive({
-    name: language.name,
-    autoname: language.autoName,
-    autonameTranscription: language.autoNameTranscription,
-    isPublished: language.isPublished,
-    description: language.description,
+    name: language?.name ?? "",
+    autoname: language?.autoName ?? "",
+    autonameTranscription: language?.autoNameTranscription ?? "",
+    isPublished: language?.isPublished ?? false,
+    description: language?.description ?? "",
 })
 
-function create(event) {
-    router.post(`/languages/${language.id}/edit`, event.data)
+function save(event) {
+    const data = { ...event.data, id: language?.id }
+    router.post('/languages/edit', data)
 }
 
 </script>
 
 <template>
   <Layout>
-    <template #top-right>
+    <template v-if="language" #top-right>
       <Link :href="`/languages/${language.id}/`">
         <UButton variant="soft" color="error">Отменить</UButton>
       </Link>
     </template>
     
     <div class="flex flex-col gap-2 items-center w-full">
-      <UForm :state @submit="create" class="flex flex-col gap-2 max-w-lg mx-auto">
-        <span class="font-yordan text-3xl text-center w-full">Создать язык</span>
+      <UForm :state @submit="save" class="flex flex-col gap-2 max-w-lg mx-auto">
+        <span class="font-yordan text-3xl text-center w-full">{{ language ? 'Редактировать язык' : 'Создать язык' }}</span>
 
         <UFormField name="name" label="Название" required :error="errors?.name" class="w-full">
           <UInput icon="i-lucide-pencil-line" v-model="state.name" class="w-full" />

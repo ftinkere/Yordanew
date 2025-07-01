@@ -37,8 +37,8 @@ public class DictionaryController(
         var language = await languageService.GetById(id);
         if (language is null) return NotFound();
         if (user.Id != language.AuthorId) return Unauthorized();
-        
-        return Inertia.Render("Dictionary/Create", new {
+
+        return Inertia.Render("Dictionary/Edit", new {
             Language = language.ToDto()
         });
     }
@@ -49,8 +49,9 @@ public class DictionaryController(
         public string? Description { get; set; }
     }
 
-    public class CreateDictionaryRequest {
+    public class DictionaryEditRequest {
         public Guid? Id { get; set; }
+        public Guid LanguageId { get; set; }
         [Required(ErrorMessage = "Поле обязательное"), MinLength(1)]
         public required string Vocabula { get; set; }
         public string? Transcription { get; set; }
@@ -60,40 +61,6 @@ public class DictionaryController(
         public IList<CreateLexemeRequest> Lexemes { get; set; } = new List<CreateLexemeRequest>();
     }
     
-    [Authorize]
-    [HttpPost("/languages/{id:guid}/dictionary/create")]
-    public async Task<IActionResult> Store(Guid id, [FromBody] CreateDictionaryRequest request) {
-        var user = GetCurrentUser();
-        if (user is null) return Unauthorized();
-        var language = await languageService.GetById(id);
-        if (language is null) return NotFound();
-        if (user.Id != language.AuthorId) return Unauthorized();
-
-        if (ModelState.IsValid) {
-            var article = new Article(new Transcriptable(request.Vocabula, request.Transcription, request.Adaptation)) {
-                LanguageId = language.Id,
-            };
-            foreach (var requestLexeme in request.Lexemes) {
-                var indexes = requestLexeme.Path?.Split('.').Select(int.Parse).ToList();
-                var lexeme = new Lexeme {
-                    ArticleId = article.Id,
-                    Description = new RichText(requestLexeme.Description ?? string.Empty),
-                    Path = indexes?.ToList() ?? [1, 1]
-                };
-                article.AddLexeme(lexeme);
-            }
-
-            await dictionaryService.Insert(article);
-            foreach (var fileId in request.AddFiles ?? new List<Guid>()) {
-                await fileService.LinkFile(fileId, article.Id, nameof(ArticleDbo));
-            }
-            return Inertia.Location($"/dictionary/{article.Id}");
-        }
-        
-        return Inertia.Render("Dictionary/Create", new {
-            Language = language.ToDto()
-        });
-    }
     
     [HttpGet("/dictionary/{id:guid}")]
     public async Task<IActionResult> View(Guid id) {
@@ -120,47 +87,71 @@ public class DictionaryController(
         var language = await languageService.GetById(article.LanguageId);
         if (language is null) return NotFound();
         if (user.Id != language.AuthorId && !language.IsPublished) return Unauthorized();
-        
+
         return Inertia.Render("Dictionary/Edit", new {
             Language = language.ToDto(),
             Article = article.ToDto(),
         });
     }
-    
-    [HttpPost("/dictionary/{id:guid}/edit")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateDictionaryRequest request) {
+
+    [Authorize]
+    [HttpPost("/dictionary/edit")]
+    public async Task<IActionResult> EditPost([FromBody] DictionaryEditRequest request) {
         var user = GetCurrentUser();
         if (user is null) return Unauthorized();
-        var earticle = await dictionaryService.GetById(id);
-        if (earticle is null) return NotFound();
-        var language = await languageService.GetById(earticle.LanguageId);
-        if (language is null) return NotFound();
-        if (user.Id != language.AuthorId && !language.IsPublished) return Unauthorized();
-        
-        if (ModelState.IsValid) {
+
+        if (request.Id is null) {
+            var language = await languageService.GetById(request.LanguageId);
+            if (language is null) return NotFound();
+            if (language.AuthorId != user.Id) return Unauthorized();
+
             var article = new Article(new Transcriptable(request.Vocabula, request.Transcription, request.Adaptation)) {
-                Id = earticle.Id,
-                LanguageId = earticle.LanguageId,
-                Lexemes = earticle.Lexemes.ToList(),
-                Files = earticle.Files.Union(request.AddFiles ?? [])
+                LanguageId = language.Id,
             };
             foreach (var requestLexeme in request.Lexemes) {
                 var indexes = requestLexeme.Path?.Split('.').Select(int.Parse).ToList();
                 var lexeme = new Lexeme {
-                    Id = requestLexeme.Id ?? Guid.CreateVersion7(),
                     ArticleId = article.Id,
-                    Description = new RichText(requestLexeme.Description ?? ""),
+                    Description = new RichText(requestLexeme.Description ?? string.Empty),
                     Path = indexes?.ToList() ?? [1, 1]
                 };
                 article.AddLexeme(lexeme);
             }
 
-            await dictionaryService.Update(article);
+            await dictionaryService.Insert(article);
+            foreach (var fileId in request.AddFiles ?? new List<Guid>()) {
+                await fileService.LinkFile(fileId, article.Id, nameof(ArticleDbo));
+            }
             return Inertia.Location($"/dictionary/{article.Id}");
         }
-        
-        return await Edit(id);
+
+        var earticle = await dictionaryService.GetById(request.Id.Value);
+        if (earticle is null) return NotFound();
+        var languageExisting = await languageService.GetById(earticle.LanguageId);
+        if (languageExisting is null) return NotFound();
+        if (user.Id != languageExisting.AuthorId && !languageExisting.IsPublished) return Unauthorized();
+
+        var updated = new Article(new Transcriptable(request.Vocabula, request.Transcription, request.Adaptation)) {
+            Id = earticle.Id,
+            LanguageId = earticle.LanguageId,
+            Lexemes = earticle.Lexemes.ToList(),
+            Files = earticle.Files.Union(request.AddFiles ?? []).ToList()
+        };
+        foreach (var requestLexeme in request.Lexemes) {
+            var indexes = requestLexeme.Path?.Split('.').Select(int.Parse).ToList();
+            var lexeme = new Lexeme {
+                Id = requestLexeme.Id ?? Guid.CreateVersion7(),
+                ArticleId = updated.Id,
+                Description = new RichText(requestLexeme.Description ?? ""),
+                Path = indexes?.ToList() ?? [1, 1]
+            };
+            updated.AddLexeme(lexeme);
+        }
+
+        await dictionaryService.Update(updated);
+        return Inertia.Location($"/dictionary/{updated.Id}");
     }
+    
     
     private AppUser? GetCurrentUser() {
         var name = HttpContext.User.Identity?.Name;

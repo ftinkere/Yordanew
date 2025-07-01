@@ -30,25 +30,43 @@ public class LanguagesController(
     [Authorize]
     [HttpGet("/languages/create")]
     public IActionResult Create() {
-        return Inertia.Render("Languages/Create");
+        return Inertia.Render("Languages/Edit");
     }
 
-    public class CreateLanguageRequest {
+    public class LanguageEditRequest {
+        public Guid? Id { get; set; } = null;
         [Required(ErrorMessage = "Обязательное поле")]
         public required string Name { get; set; }
         public string? Autoname { get; set; }
         public string? AutonameTranscription { get; set; }
         public bool IsPublished { get; set; } = false;
+        public string Description { get; set; } = "";
     }
-    
+
     [Authorize]
-    [HttpPost("/languages/create")]
-    public async Task<IActionResult> Store([FromBody] CreateLanguageRequest request) {
+    [HttpPost("/languages/edit")]
+    public async Task<IActionResult> EditPost([FromBody] LanguageEditRequest request) {
         var user = GetCurrentUser();
         if (user is null) return Unauthorized();
-        var language = Language.Create(user.Id, new Translatable(request.Name, request.Autoname, request.AutonameTranscription), request.IsPublished);
-        var answer = await languageService.Insert(language);
-        return Inertia.Location($"/languages/{language.Id}");
+
+        if (request.Id is null) {
+            var language = Language.Create(user.Id,
+                new Translatable(request.Name, request.Autoname, request.AutonameTranscription),
+                request.IsPublished);
+            language.Description = new RichText(request.Description);
+            await languageService.Insert(language);
+            return Inertia.Location($"/languages/{language.Id}");
+        }
+
+        var existing = await languageService.GetById(request.Id.Value);
+        if (existing is null) return NotFound();
+        if (existing.AuthorId != user.Id) return Unauthorized();
+
+        existing.Update(request.Name, request.Autoname, request.AutonameTranscription,
+            request.IsPublished, request.Description);
+
+        await languageService.Update(existing);
+        return Inertia.Location($"/languages/{existing.Id}");
     }
 
     [HttpGet("/languages/{id}")]
@@ -74,36 +92,6 @@ public class LanguagesController(
         });
     }
 
-    public class LanguageUpdateRequest {
-        [Required(ErrorMessage = "Обязательное поле")]
-        public required string Name { get; set; }
-        public string? Autoname { get; set; }
-        public string? AutonameTranscription { get; set; }
-        public bool IsPublished { get; set; } = false;
-        public string Description { get; set; } = "";
-    }
-    
-    [Authorize]
-    [HttpPost("/languages/{id}/edit")]
-    public async Task<IActionResult> EditPost(Guid id, [FromBody] LanguageUpdateRequest request) {
-        var user = GetCurrentUser();
-        if (user is null) return Unauthorized();
-        var language = await languageService.GetById(id);
-        if (language is null) return NotFound();
-        if (user.Id != language.AuthorId) return Unauthorized();
-        
-        if (ModelState.IsValid) {
-            language.Update(request.Name, request.Autoname, request.AutonameTranscription, request.IsPublished,
-                request.Description);
-
-            var res = await languageService.Update(language); 
-            return Inertia.Location($"/languages/{language.Id}");
-        }
-        
-        return Inertia.Render("Languages/Edit", new {
-            Language = language.ToDto()
-        });
-    }
 
     private AppUser? GetCurrentUser() {
         var name = HttpContext.User.Identity?.Name;

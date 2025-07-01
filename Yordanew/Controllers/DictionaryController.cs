@@ -84,6 +84,9 @@ public class DictionaryController(
             }
 
             await dictionaryService.Insert(article);
+            foreach (var fileId in request.AddFiles ?? new List<Guid>()) {
+                await fileService.LinkFile(fileId, article.Id, nameof(ArticleDbo));
+            }
             return Inertia.Location($"/dictionary/{article.Id}");
         }
         
@@ -151,7 +154,10 @@ public class DictionaryController(
                 article.AddLexeme(lexeme);
             }
 
-            await dictionaryService.Update(article); 
+            await dictionaryService.Update(article);
+            foreach (var fileId in request.AddFiles ?? new List<Guid>()) {
+                await fileService.LinkFile(fileId, article.Id, nameof(ArticleDbo));
+            }
             return Inertia.Location($"/dictionary/{article.Id}");
         }
         
@@ -189,6 +195,32 @@ public class DictionaryController(
         var guid = JsonSerializer.Deserialize<string>(rawBody);
         if (guid is null) return BadRequest();
         fileService.DeleteFilepondFile(Guid.Parse(guid), "dictionary");
+        return Ok();
+    }
+
+    [Authorize]
+    [HttpPost("/dictionary/{id:guid}/files")]
+    public async Task<IActionResult> AttachFile(Guid id, [FromBody] Guid fileId) {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var article = await dictionaryService.GetById(id);
+        if (article is null) return NotFound();
+        var language = await languageService.GetById(article.LanguageId);
+        if (language is null || language.AuthorId != user.Id) return Unauthorized();
+        await fileService.LinkFile(fileId, id, nameof(ArticleDbo));
+        return Ok();
+    }
+
+    [Authorize]
+    [HttpDelete("/dictionary/{id:guid}/files/{fileId:guid}")]
+    public async Task<IActionResult> RemoveFile(Guid id, Guid fileId) {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var article = await dictionaryService.GetById(id);
+        if (article is null) return NotFound();
+        var language = await languageService.GetById(article.LanguageId);
+        if (language is null || language.AuthorId != user.Id) return Unauthorized();
+        fileService.UnlinkFile(fileId, id);
         return Ok();
     }
 }

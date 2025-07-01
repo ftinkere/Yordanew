@@ -7,29 +7,23 @@ import Editor from "../../Components/Editor.vue";
 import 'filepond/dist/filepond.min.css';
 import * as FilePond from 'filepond';
 
-const language = usePage().props.language
-const article = usePage().props.article
-const userId = usePage().props.auth?.user?.id
+const language = computed(() => usePage().props.language)
+const article = computed(() => usePage().props.article)
+const userId = computed(() => usePage().props.auth?.user?.id)
 const errors = computed(() => usePage().props.errors)
 
 provide('language', language)
-
-article.lexemes = article.lexemes.map(lexeme => {
-    lexeme.article = lexeme.description
-    lexeme.path = lexeme.path.join('.')
-    return lexeme
-})
 
 function back() {
     window.history.back()
 }
 
 const state = reactive({
-    vocabula: article.lemma,
-    transcription: article.transcription,
-    adaptation: article.adaptation,
-    lexemes: article.lexemes,
-    addFiles: article.files ?? [],
+    vocabula: article.value.lemma,
+    transcription: article.value.transcription,
+    adaptation: article.value.adaptation,
+    lexemes: article.value.lexemes,
+    addFiles: article.value.files ?? [],
 })
 
 function parsePath(path) {
@@ -50,17 +44,27 @@ function addLexeme() {
     const path = makePath(parts)
     state.lexemes.push({
         path: path,
-        article: "",
+        description: "",
     })
 }
 
 function edit(event) {
-    console.log(event.data);
-    router.post(`/dictionary/${article.id}/edit`, event.data, {
+    router.post(`/dictionary/${article.value.id}/edit`, event.data, {
         preserveState: true,
         preserveScroll: true,
     })
 }
+
+function fileDelete(fileId) {
+    router.delete(`/dictionary/${article.value.id}/files/${fileId}`, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            state.addFiles = state.addFiles.filter(id => id !== fileId)
+        }
+    })
+}
+
 
 const disableFormSubmit = ref(false)
 
@@ -118,6 +122,15 @@ onMounted(() => {
         <UInput icon="i-lucide-pencil-line" v-model="state.adaptation" class="w-full"/>
       </UFormField>
 
+      <div class="py-4 flex flex-row flex-wrap gap-2">
+        <div v-for="fileId in article.files" :key="fileId">
+          <div class="relative">
+            <UButton variant="solid" color="error" icon="i-lucide-trash" class="absolute -end-4 -top-4 rounded-full" @click="fileDelete(fileId)"/>
+            <img :src="`/dictionary/files/${fileId}`" alt="Изображение статьи" class="w-32 rounded-lg" />
+          </div>
+        </div>
+      </div>
+      
       <div class="my-4">
         <input ref="fileElement" class="filepond" name="file" type="file" multiple accept="image/*"/>
       </div>
@@ -139,7 +152,7 @@ onMounted(() => {
 
             <UFormField name="article" label="Статья"
                         :error="errors?.lexemes ? errors?.lexemes[lexeme.path]?.article : null" class="w-full">
-              <Editor v-model="lexeme.article" class="w-full"/>
+              <Editor v-model="lexeme.description" class="w-full"/>
             </UFormField>
           </div>
         </template>

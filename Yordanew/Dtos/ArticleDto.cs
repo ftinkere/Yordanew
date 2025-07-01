@@ -10,6 +10,7 @@ public class ArticleDto {
     public string? Adaptation { get; set; }
     
     public virtual ICollection<LexemeDto> Lexemes { get; set; } = [];
+    public virtual ICollection<Guid> Files { get; set; } = [];
 }
 
 public static class ArticleDtoMapper {
@@ -21,6 +22,7 @@ public static class ArticleDtoMapper {
             Transcription = article.Lemma.Transcription,
             Adaptation = article.Lemma.Adaptation,
             Lexemes = article.Lexemes.Select(l => l.ToDto()).ToList(),
+            Files = article.Files.ToList()
         };
     }
 }

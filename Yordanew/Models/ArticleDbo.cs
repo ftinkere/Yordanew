@@ -13,4 +13,6 @@ public class ArticleDbo {
     
     public virtual LanguageDbo Language { get; set; }
     public virtual ICollection<LexemeDbo> Lexemes { get; set; } = [];
+    [NotMapped]
+    public virtual ICollection<Guid> Files { get; set; } = [];
 }

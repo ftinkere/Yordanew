@@ -1,8 +1,14 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Server.HttpSys;
+using Microsoft.EntityFrameworkCore;
 using Yordanew.Models;
 
 namespace Yordanew.Services;
 
-public class FileService(IWebHostEnvironment env, AppDbContext db) {
+public class FileService(
+    IWebHostEnvironment env, 
+    AppDbContext db
+    ) {
     public string GetAvatarPath(Guid userId) {
         return Path.Combine(env.WebRootPath, "uploaded-files", "avatars", userId.ToString());
     }
@@ -40,7 +46,7 @@ public class FileService(IWebHostEnvironment env, AppDbContext db) {
 
     }
 
-    public async Task<Guid> UploadFilepondFile(IFormFile file, string folder) {
+    public async Task<Guid> UploadFilepondFile(IFormFile file, string folder, Guid userId) {
         if (file.Length <= 0) {
             return Guid.Empty;
         }
@@ -56,6 +62,7 @@ public class FileService(IWebHostEnvironment env, AppDbContext db) {
 
         await db.Files.AddAsync(new FileDbo {
             Id = guid,
+            UserId = userId,
             FileName = file.FileName,
             MimeType = file.ContentType,
             Size = file.Length
@@ -80,5 +87,9 @@ public class FileService(IWebHostEnvironment env, AppDbContext db) {
         if (rel is null) return;
         db.FileRelations.Remove(rel);
         db.SaveChanges();
+    }
+
+    public Task<FileDbo?> GetById(Guid id) {
+        return db.Files.FirstOrDefaultAsync(f => f.Id == id);
     }
 }

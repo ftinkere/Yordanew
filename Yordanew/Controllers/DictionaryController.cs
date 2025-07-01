@@ -46,7 +46,7 @@ public class DictionaryController(
     public class CreateLexemeRequest {
         public Guid? Id { get; set; }
         public string? Path { get; set; } = "1.1";
-        public string? Article { get; set; }
+        public string? Description { get; set; }
     }
 
     public class CreateDictionaryRequest {
@@ -74,11 +74,11 @@ public class DictionaryController(
                 LanguageId = language.Id,
             };
             foreach (var requestLexeme in request.Lexemes) {
-                var indexes = requestLexeme.Path?.Split('.').Select(int.Parse) ?? [];
+                var indexes = requestLexeme.Path?.Split('.').Select(int.Parse).ToList();
                 var lexeme = new Lexeme {
                     ArticleId = article.Id,
-                    Description = new RichText(requestLexeme.Article ?? string.Empty),
-                    Path = indexes.ToList()
+                    Description = new RichText(requestLexeme.Description ?? string.Empty),
+                    Path = indexes?.ToList() ?? [1, 1]
                 };
                 article.AddLexeme(lexeme);
             }
@@ -141,27 +141,25 @@ public class DictionaryController(
             var article = new Article(new Transcriptable(request.Vocabula, request.Transcription, request.Adaptation)) {
                 Id = earticle.Id,
                 LanguageId = earticle.LanguageId,
-                Lexemes = earticle.Lexemes.ToList()
+                Lexemes = earticle.Lexemes.ToList(),
+                Files = earticle.Files.Union(request.AddFiles ?? [])
             };
             foreach (var requestLexeme in request.Lexemes) {
-                var indexes = requestLexeme.Path?.Split('.').Select(int.Parse) ?? [];
+                var indexes = requestLexeme.Path?.Split('.').Select(int.Parse).ToList();
                 var lexeme = new Lexeme {
                     Id = requestLexeme.Id ?? Guid.CreateVersion7(),
                     ArticleId = article.Id,
-                    Description = new RichText(requestLexeme.Article ?? ""),
-                    Path = indexes.ToList()
+                    Description = new RichText(requestLexeme.Description ?? ""),
+                    Path = indexes?.ToList() ?? [1, 1]
                 };
                 article.AddLexeme(lexeme);
             }
 
             await dictionaryService.Update(article);
-            foreach (var fileId in request.AddFiles ?? new List<Guid>()) {
-                await fileService.LinkFile(fileId, article.Id, nameof(ArticleDbo));
-            }
             return Inertia.Location($"/dictionary/{article.Id}");
         }
         
-        return Inertia.Location($"/dictionary/{id}/edit");
+        return await Edit(id);
     }
     
     private AppUser? GetCurrentUser() {
@@ -173,16 +171,20 @@ public class DictionaryController(
     }
     
     [Authorize]
-    [HttpGet("/dictionary/files")]
-    public IActionResult FetchFile([FromQuery] Guid id) {
-        return PhysicalFile(Path.Combine(fileService.GetBasePath("dictionary"), id.ToString()), "application/octet-stream");
+    [HttpGet("/dictionary/files/{id:guid}")]
+    public async Task<IActionResult> FetchFile(Guid id) {
+        var file = await fileService.GetById(id);
+        if (file is null) return NotFound();
+        return PhysicalFile(Path.Combine(fileService.GetBasePath("dictionary"), id.ToString()), file.MimeType, file.FileName);
     }
     
     
     [Authorize]
     [HttpPost("/dictionary/files")]
     public async Task<IActionResult> UploadFile([FromForm] IFormFile file) {
-        return Ok((await fileService.UploadFilepondFile(file, "dictionary")).ToString());
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        return Ok((await fileService.UploadFilepondFile(file, "dictionary", user.Id)).ToString());
     }
     
     [Authorize]
@@ -199,19 +201,6 @@ public class DictionaryController(
     }
 
     [Authorize]
-    [HttpPost("/dictionary/{id:guid}/files")]
-    public async Task<IActionResult> AttachFile(Guid id, [FromBody] Guid fileId) {
-        var user = GetCurrentUser();
-        if (user is null) return Unauthorized();
-        var article = await dictionaryService.GetById(id);
-        if (article is null) return NotFound();
-        var language = await languageService.GetById(article.LanguageId);
-        if (language is null || language.AuthorId != user.Id) return Unauthorized();
-        await fileService.LinkFile(fileId, id, nameof(ArticleDbo));
-        return Ok();
-    }
-
-    [Authorize]
     [HttpDelete("/dictionary/{id:guid}/files/{fileId:guid}")]
     public async Task<IActionResult> RemoveFile(Guid id, Guid fileId) {
         var user = GetCurrentUser();
@@ -221,6 +210,7 @@ public class DictionaryController(
         var language = await languageService.GetById(article.LanguageId);
         if (language is null || language.AuthorId != user.Id) return Unauthorized();
         fileService.UnlinkFile(fileId, id);
-        return Ok();
+        article.Files = article.Files.Where(f => f != fileId).ToList();
+        return await Edit(id);
     }
 }

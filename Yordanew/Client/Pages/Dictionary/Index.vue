@@ -46,13 +46,14 @@ function to(page) {
         </template>
         <div class="ps-[10px] flex flex-col gap-1">
           <div class="flex flex-row gap-2" v-for="lexeme in article.lexemes" :key="lexeme.id">
-            <span>{{ lexeme.path.join('.') }}</span>
+            <span>{{ lexeme.path }}</span>
             <div class="ProseMirror line-clamp-1 first-line-fixed" v-html="lexeme.description"></div>
           </div>
         </div>
       </UCard>
       
       <UPagination
+          v-if="language.totalCount > language.pageSize"
           variant="soft"
           active-variant="soft"
           :page="language.page"

@@ -2,6 +2,7 @@
 import Layout from "../../Layout.vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import { provide, ref, onMounted, onUnmounted } from "vue";
+import FsLightbox from "fslightbox-vue";
 
 const language = usePage().props.language
 const article = usePage().props.article
@@ -64,19 +65,25 @@ onUnmounted(() => {
         <span v-if="article.adaptation && article.adaptation !== article.lemma" class="text-neutral-400 dark:text-neutral-500 text-sm">{{ article.adaptation }}</span>
       </div>
 
+      <div class="py-4 flex flex-row flex-wrap gap-2">
+        <div v-for="fileId in article.files" :key="fileId">
+          <img :src="`/dictionary/files/${fileId}`" alt="Изображение статьи" class="w-32 rounded-lg" />
+        </div>
+      </div>
+      
       <div v-if="!lastVisible" class="p-4 flex flex-col gap-1">
         <div v-for="lexeme in article.lexemes" :key="lexeme.id">
           <div class="font-bold float-left me-2">
-            {{ lexeme.path?.join('.') }}
+            {{ lexeme.path }}
           </div>
           <div class="ProseMirror line-clamp-1 first-line-fixed" v-html="lexeme.description.content"></div>
         </div>
       </div>
       
       <div class="p-4 flex flex-col gap-2 divide-y divide-neutral-700">
-        <div v-for="(lexeme, index) in article.lexemes" :key="lexeme.id" :ref="el => setLastRef(el, index)">
+        <div v-for="(lexeme, index) in article.lexemes" :key="lexeme.id" :ref="el => setLastRef(el, index)" class="pb-2">
           <div class="font-bold float-left me-2">
-            {{ lexeme.path?.join('.') }}
+            {{ lexeme.path }}
           </div>
           <div class="ProseMirror" v-html="lexeme.description"></div>
         </div>

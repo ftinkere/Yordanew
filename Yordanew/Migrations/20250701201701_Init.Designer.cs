@@ -12,8 +12,8 @@ using Yordanew;
 namespace Yordanew.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250629115446_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250701201701_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -232,9 +232,6 @@ namespace Yordanew.Migrations
                     b.Property<string>("Adaptation")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("LanguageDboId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("LanguageId")
                         .HasColumnType("uuid");
 
@@ -247,9 +244,60 @@ namespace Yordanew.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LanguageDboId");
+                    b.HasIndex("LanguageId");
 
                     b.ToTable("Articles");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.FileDbo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Files");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.FileRelationDbo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("FileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileId");
+
+                    b.ToTable("FileRelations");
                 });
 
             modelBuilder.Entity("Yordanew.Models.LanguageDbo", b =>
@@ -267,7 +315,7 @@ namespace Yordanew.Migrations
                     b.Property<string>("AutoNameTranscription")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
@@ -367,9 +415,24 @@ namespace Yordanew.Migrations
 
             modelBuilder.Entity("Yordanew.Models.ArticleDbo", b =>
                 {
-                    b.HasOne("Yordanew.Models.LanguageDbo", null)
+                    b.HasOne("Yordanew.Models.LanguageDbo", "Language")
                         .WithMany("Articles")
-                        .HasForeignKey("LanguageDboId");
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.FileRelationDbo", b =>
+                {
+                    b.HasOne("Yordanew.Models.FileDbo", "File")
+                        .WithMany("Relations")
+                        .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("File");
                 });
 
             modelBuilder.Entity("Yordanew.Models.LanguageDbo", b =>
@@ -397,6 +460,11 @@ namespace Yordanew.Migrations
             modelBuilder.Entity("Yordanew.Models.ArticleDbo", b =>
                 {
                     b.Navigation("Lexemes");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.FileDbo", b =>
+                {
+                    b.Navigation("Relations");
                 });
 
             modelBuilder.Entity("Yordanew.Models.LanguageDbo", b =>

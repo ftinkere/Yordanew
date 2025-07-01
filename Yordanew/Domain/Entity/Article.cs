@@ -9,6 +9,7 @@ public class Article(Transcriptable lemma) {
     public Transcriptable Lemma { get; set; } = lemma;
     
     public IEnumerable<Lexeme> Lexemes { get; set; } = new List<Lexeme>();
+    public IEnumerable<Guid> Files { get; set; } = new List<Guid>();
 
     public void AddLexeme(Lexeme lexeme) {
         Lexemes = Lexemes.Append(lexeme);
@@ -20,7 +21,8 @@ public static class ArticleExtensions {
         return new Article(new Transcriptable(dbo.Lemma ?? string.Empty, dbo.Transcription, dbo.Adaptation)) {
             Id = dbo.Id,
             LanguageId = dbo.LanguageId,
-            Lexemes = dbo.Lexemes.Select(l => l.ToDomain()).ToList()
+            Lexemes = dbo.Lexemes.Select(l => l.ToDomain()).ToList(),
+            Files = dbo.Files,
         };
     }
 }

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Yordanew.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -50,6 +50,22 @@ namespace Yordanew.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Files",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FileName = table.Column<string>(type: "text", nullable: false),
+                    MimeType = table.Column<string>(type: "text", nullable: false),
+                    Size = table.Column<long>(type: "bigint", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Files", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -170,7 +186,7 @@ namespace Yordanew.Migrations
                     AutoNameTranscription = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     IsPublished = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -184,6 +200,26 @@ namespace Yordanew.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FileRelations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EntityId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EntityName = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FileRelations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FileRelations_Files_FileId",
+                        column: x => x.FileId,
+                        principalTable: "Files",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Articles",
                 columns: table => new
                 {
@@ -191,17 +227,17 @@ namespace Yordanew.Migrations
                     LanguageId = table.Column<Guid>(type: "uuid", nullable: false),
                     Lemma = table.Column<string>(type: "text", nullable: false),
                     Transcription = table.Column<string>(type: "text", nullable: true),
-                    Adaptation = table.Column<string>(type: "text", nullable: true),
-                    LanguageDboId = table.Column<Guid>(type: "uuid", nullable: true)
+                    Adaptation = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Articles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Articles_Languages_LanguageDboId",
-                        column: x => x.LanguageDboId,
+                        name: "FK_Articles_Languages_LanguageId",
+                        column: x => x.LanguageId,
                         principalTable: "Languages",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -225,9 +261,9 @@ namespace Yordanew.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Articles_LanguageDboId",
+                name: "IX_Articles_LanguageId",
                 table: "Articles",
-                column: "LanguageDboId");
+                column: "LanguageId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -267,6 +303,11 @@ namespace Yordanew.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_FileRelations_FileId",
+                table: "FileRelations",
+                column: "FileId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Languages_AuthorId",
                 table: "Languages",
                 column: "AuthorId");
@@ -296,10 +337,16 @@ namespace Yordanew.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "FileRelations");
+
+            migrationBuilder.DropTable(
                 name: "Lexemes");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Files");
 
             migrationBuilder.DropTable(
                 name: "Articles");

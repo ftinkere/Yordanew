@@ -21,8 +21,8 @@ const state = reactive({
     adaptation: "",
     lexemes: [
         {
-            path: '1.1',
-            article: '',
+            path: "1.1",
+            description: '',
         }
     ]
 })
@@ -38,14 +38,15 @@ function makePath(parts) {
 const lastLexeme = computed(() => state.lexemes[state.lexemes.length - 1])
 
 function addLexeme() {
-    const parts = parsePath(lastLexeme.value.path)
+    const parts = lastLexeme.value.path
     if (parts.length > 0) {
         parts[parts.length - 1]++
+    } else {
+        parts[0] = 1
     }
-    const path = makePath(parts)
     state.lexemes.push({
         path: path,
-        article: "",
+        description: "",
     })
 }
 
@@ -103,9 +104,9 @@ function create(event) {
               </UInput>
             </UFormField>
 
-            <UFormField name="article" label="Статья"
-                        :error="errors?.lexemes ? errors?.lexemes[lexeme.path]?.article : null" class="w-full">
-              <Editor v-model="lexeme.article" class="w-full"/>
+            <UFormField name="desciption" label="Статья"
+                        :error="errors?.lexemes ? errors?.lexemes[lexeme.path]?.desciption : null" class="w-full">
+              <Editor v-model="lexeme.desciption" class="w-full"/>
             </UFormField>
           </div>
         </template>

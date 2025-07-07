@@ -16,7 +16,7 @@ public class LanguageService(AppDbContext db) {
             Description = language.Description.Content,
             IsPublished = language.IsPublished,
             CreatedAt = language.CreatedAt,
-            EditorsIds = language.EditorsIds.ToArray(),
+            // EditorsIds = language.EditorsIds.ToArray(),
         })).Entity.ToDomain();
 
         await db.SaveChangesAsync();
@@ -50,7 +50,30 @@ public class LanguageService(AppDbContext db) {
             .Take(pageSize)
             .LoadAsync();
         
-        return entity?.ToDomain();
+        
+        await db.Entry(entity)
+            .Collection(l => l.PartsOfSpeech)
+            .Query()
+            .OrderBy(pos => pos.Id)
+            .Include(pos => pos.Categories)
+            .ThenInclude(c => c.Features)
+            .LoadAsync();
+
+        foreach (var pos in entity.PartsOfSpeech)
+        {
+            pos.Categories = pos.Categories
+                .OrderBy(c => c.Id)
+                .ToList();
+
+            foreach (var cat in pos.Categories)
+            {
+                cat.Features = cat.Features
+                    .OrderBy(f => f.Id)
+                    .ToList();
+            }
+        }
+        
+        return entity.ToDomain();
     }
 
     public Task<int> CountArticles(Guid languageId) {
@@ -67,7 +90,7 @@ public class LanguageService(AppDbContext db) {
         dbo.AutoNameTranscription = language.Name.Transcription;
         dbo.Description = language.Description.Content;
         dbo.IsPublished = language.IsPublished;
-        dbo.EditorsIds = language.EditorsIds.ToArray();
+        // dbo.EditorsIds = language.EditorsIds.ToArray();
         await db.SaveChangesAsync();
         return dbo.ToDomain();
     }

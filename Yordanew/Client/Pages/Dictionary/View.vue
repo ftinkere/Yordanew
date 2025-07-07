@@ -2,7 +2,7 @@
 import Layout from "../../Layout.vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import { provide, ref, onMounted, onUnmounted } from "vue";
-import FsLightbox from "fslightbox-vue";
+import * as CRC from "crc-32";
 
 const language = usePage().props.language
 const article = usePage().props.article
@@ -45,6 +45,13 @@ onMounted(() => {
 onUnmounted(() => {
     if (observer) observer.disconnect();
 });
+
+const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
+function tagColor(tag) {
+    const hash = CRC.str(tag)
+    const index = (hash % colors.length + colors.length) % colors.length
+    return colors[index];
+}
 </script>
 
 <template>
@@ -77,6 +84,11 @@ onUnmounted(() => {
             {{ lexeme.path }}
           </div>
           <div class="ProseMirror line-clamp-1 first-line-fixed" v-html="lexeme.description.content"></div>
+          <div class="flex flex-row flex-wrap gap-2">
+            <div v-for="tag in lexeme.tags" class="tag rounded-lg" :data-color="tagColor(tag)">
+              {{ tag }}
+            </div>
+          </div>
         </div>
       </div>
       
@@ -86,6 +98,11 @@ onUnmounted(() => {
             {{ lexeme.path }}
           </div>
           <div class="ProseMirror" v-html="lexeme.description"></div>
+          <div class="flex flex-row flex-wrap gap-2">
+            <div v-for="tag in lexeme.tags" class="tag rounded-lg" :data-color="tagColor(tag)">
+              {{ tag }}
+            </div>
+          </div>
         </div>
       </div>
     </div>

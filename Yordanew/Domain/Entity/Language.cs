@@ -13,36 +13,16 @@ public class Language {
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public required Guid AuthorId { get; set; }
-    public IEnumerable<Guid> EditorsIds { get; set; } = new List<Guid>();
-    public IEnumerable<PartOfSpeech> PartsOfSpeech { get; set; } = new List<PartOfSpeech>();
+    
     public IEnumerable<Article> Articles { get; set; } = new List<Article>();
+    
+    public IDictionary<PartOfSpeech, IDictionary<GrammaticalCategory, IList<GrammaticalFeature>>> Grammatic { get; set; } = new Dictionary<PartOfSpeech, IDictionary<GrammaticalCategory, IList<GrammaticalFeature>>>();
     
     public Author Author { get; set; }
     
     
     public static Language Create(Guid authorId, Translatable name, bool isPublished = false) {
         return new Language { Name = name, IsPublished = isPublished, AuthorId = authorId};
-    }
-    
-    public void AddEditor(Guid editorId) {
-        EditorsIds = EditorsIds.Append(editorId);
-    }
-    
-    public void AppendPartOfSpeech(PartOfSpeech partOfSpeech) {
-        PartsOfSpeech = PartsOfSpeech.Append(partOfSpeech);
-    }
-    
-    public void RemovePartOfSpeech(Guid partOfSpeechId) {
-        PartsOfSpeech = PartsOfSpeech.Where(pos => pos.Id != partOfSpeechId);
-    }
-
-    public void ReorderPartOfSpeech(Guid partOfSpeechId, int newIndex) {
-        if (newIndex >= PartsOfSpeech.Count())
-            return;
-        
-        var listWithout = PartsOfSpeech.Where(pos => pos.Id != partOfSpeechId);
-        var added = listWithout.InsertAfter(newIndex - 1, PartsOfSpeech.Single(pos => pos.Id == partOfSpeechId));
-        PartsOfSpeech = added;
     }
     
     public void AddArticle(Article article) {
@@ -65,20 +45,45 @@ public class Language {
         Description = new RichText(description ?? Description.Content);
         IsPublished = isPublished ?? IsPublished;
     }
+
+    public void FillGrammatic(IEnumerable<PartOfSpeechDbo> posDbos) {
+        Grammatic = new Dictionary<PartOfSpeech, IDictionary<GrammaticalCategory, IList<GrammaticalFeature>>>();
+        foreach (var posDbo in posDbos) {
+            var pos = posDbo.ToDomain();
+            var dict = new Dictionary<GrammaticalCategory, IList<GrammaticalFeature>>();
+            foreach (var category in posDbo.Categories) {
+                var cat = category.ToDomain();
+                dict[cat] = category.Features.Select(f => f.ToDomain()).ToList();;
+            }
+            Grammatic[pos] = dict;
+        }
+    }
+    
+    public override bool Equals(object? obj) {
+        if (obj is Language pos) {
+            return Id.Equals(pos.Id);
+        }
+        return false;
+    }
+
+    public override int GetHashCode() {
+        return Id.GetHashCode();
+    }
 }
 
 public static class LanguageExtensions {
     public static Language ToDomain(this LanguageDbo dbo) {
-        return new Language {
+        var lang = new Language {
             Id = dbo.Id,
             AuthorId = dbo.AuthorId,
             Name = new Translatable(dbo.Name ?? string.Empty, dbo.AutoName, dbo.AutoNameTranscription),
             Description = new RichText(dbo.Description ?? string.Empty),
             IsPublished = dbo.IsPublished,
             CreatedAt = dbo.CreatedAt,
-            EditorsIds = dbo.EditorsIds?.ToList() ?? [],
             Author = dbo.Author.ToDomain(),
             Articles = dbo.Articles.Select(a => a.ToDomain()).ToList(),
         };
+        lang.FillGrammatic(dbo.PartsOfSpeech);
+        return lang;
     }
 }

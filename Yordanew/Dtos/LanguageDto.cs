@@ -1,6 +1,4 @@
-
 using Yordanew.Domain.Entity;
-using Yordanew.Models;
 
 namespace Yordanew.Dtos;
 
@@ -19,6 +17,8 @@ public class LanguageDto {
     public int TotalCount { get; set; } = 1;
 
     public ICollection<ArticleDto> Articles { get; set; } = [];
+
+    public IList<PartOfSpeechDto> PartsOfSpeech { get; set; } = new List<PartOfSpeechDto>();
 }
 
 public static class LanguageDtoMapper {
@@ -33,6 +33,7 @@ public static class LanguageDtoMapper {
             IsPublished = language.IsPublished,
             CreatedAt = language.CreatedAt,
             Articles = language.Articles.Select(a => a.ToDto()).ToList(),
+            PartsOfSpeech = language.Grammatic.Select(kvp => kvp.Key.ToDto(kvp.Value)).ToList(),
             
             Page = page,
             PageSize = pageSize,

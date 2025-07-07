@@ -4,7 +4,7 @@ using Yordanew.Domain.ValueObjects;
 namespace Yordanew.Domain.Entity;
 
 public class Article(Transcriptable lemma) {
-    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public Guid Id { get; init; } = Guid.CreateVersion7();
     public Guid LanguageId { get; set; } = Guid.Empty;
     public Transcriptable Lemma { get; set; } = lemma;
     
@@ -13,6 +13,17 @@ public class Article(Transcriptable lemma) {
 
     public void AddLexeme(Lexeme lexeme) {
         Lexemes = Lexemes.Append(lexeme);
+    }
+    
+    public override bool Equals(object? obj) {
+        if (obj is Article pos) {
+            return Id.Equals(pos.Id);
+        }
+        return false;
+    }
+
+    public override int GetHashCode() {
+        return Id.GetHashCode();
     }
 }
 

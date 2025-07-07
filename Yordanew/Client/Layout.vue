@@ -13,7 +13,7 @@ const isMobileShowAside = ref(false);
 <template>
   <UApp>
     <div class="relative flex flex-row items-stretch min-h-[100dvh]">
-      <aside class="max-sm:absolute sticky max-sm:top-10 sm:top-0 bottom-0 flex flex-col gap-2 w-fit max-h-[100dvh] font-yordan shadow-sm shadow-neutral-400 dark:shadow-neutral-700 max-sm:not-[.show]:hidden backdrop-blur-lg z-100"
+      <aside class="max-sm:absolute sticky max-sm:top-10 sm:top-0 bottom-0 flex flex-col gap-2  w-fit max-h-[100dvh] font-yordan shadow-sm shadow-neutral-400 dark:shadow-neutral-700 max-sm:not-[.show]:hidden backdrop-blur-lg z-100"
       :class="{ show: isMobileShowAside }">
         <Link href="/" class="w-full" prefetch>
           <UButton class="mb-2 px-10 font-yordan text-2xl shadow-md w-full" variant="ghost">Ëрдан</UButton>
@@ -21,13 +21,16 @@ const isMobileShowAside = ref(false);
         <Link href="/languages" class="w-full" prefetch>
           <UButton icon="i-lucide-languages" variant="ghost" class="mb-2 text-neutral-200 w-full">Все языки</UButton>
         </Link>
-        <div v-if="language" class="flex flex-col gap-1">
+        <div v-if="language" class="flex flex-col gap-1 items-start">
           <USeparator />
           <Link :href="`/languages/${language.id}`" class="w-full" prefetch>
-            <UButton icon="i-lucide-info" variant="ghost" class="mb-2 text-neutral-200 w-full">О языке</UButton>
+            <UButton icon="i-lucide-info" variant="ghost" class="mb-2 text-neutral-200 w-full justify-start">О языке</UButton>
           </Link>
           <Link :href="`/languages/${language.id}/dictionary`" class="w-full" prefetch>
-            <UButton icon="i-lucide-list" variant="ghost" class="mb-2 text-neutral-200 w-full">Словарь</UButton>
+            <UButton icon="i-lucide-book-a" variant="ghost" class="mb-2 text-neutral-200 w-full justify-start">Словарь</UButton>
+          </Link>
+          <Link :href="`/grammatic/${language.id}`" class="w-full" prefetch>
+            <UButton icon="i-lucide-cpu" variant="ghost" class="mb-2 text-neutral-200 w-full justify-items-start justify-start">Грамматика</UButton>
           </Link>
         </div>
 

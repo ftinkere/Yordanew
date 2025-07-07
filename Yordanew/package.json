@@ -18,6 +18,7 @@
     "@tiptap/pm": "^2.22.3",
     "@tiptap/starter-kit": "^2.22.3",
     "@tiptap/vue-3": "^2.22.3",
+    "crc-32": "https://cdn.sheetjs.com/crc-32-latest/crc-32-latest.tgz",
     "filepond": "^4.32.8",
     "tailwindcss": "^4.1.10",
     "vue": "^3.5.17"

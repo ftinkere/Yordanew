@@ -22,7 +22,7 @@ const state = reactive({
     vocabula: article.value?.lemma ?? "",
     transcription: article.value?.transcription ?? "",
     adaptation: article.value?.adaptation ?? "",
-    lexemes: article.value?.lexemes ?? [{ path: "1.1", description: '' }],
+    lexemes: article.value?.lexemes ?? [{ path: "1.1", description: '', tags: [] }],
     addFiles: article.value?.files ?? [],
 })
 
@@ -45,6 +45,7 @@ function addLexeme() {
     state.lexemes.push({
         path: path,
         description: "",
+        tags: [],
     })
 }
 
@@ -157,6 +158,10 @@ onMounted(() => {
             <UFormField name="article" label="Статья"
                         :error="errors?.lexemes ? errors?.lexemes[lexeme.path]?.article : null" class="w-full">
               <Editor v-model="lexeme.description" class="w-full"/>
+            </UFormField>
+            
+            <UFormField name="tags" label="Теги" :error="errors?.lexemes ? errors?.lexemes[lexeme.path]?.tags : null" class="w-full">
+              <UInputTags v-model="lexeme.tags" variant="soft" placeholder="Добавьте теги..." class="w-full" />
             </UFormField>
           </div>
         </template>

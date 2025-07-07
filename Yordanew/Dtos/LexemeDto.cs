@@ -7,6 +7,7 @@ public class LexemeDto {
     public Guid ArticleId { get; set; }
     public string? Description { get; set; }
     public string Path { get; set; } = "1.1";
+    public string[] Tags { get; set; } = [];
 }
 
 public static class LexemeDtoMapper {
@@ -16,6 +17,7 @@ public static class LexemeDtoMapper {
             ArticleId = lexeme.ArticleId,
             Description = lexeme.Description.Content,
             Path = string.Join('.', lexeme.Path ?? []),
+            Tags = lexeme.Tags.ToArray(),
         };
     }
 }

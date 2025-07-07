@@ -10,6 +10,7 @@ public class LexemeDbo {
     public Guid ArticleId { get; set; }
     public string? Description { get; set; }
     public int[] Path { get; set; } = [];
+    public string[] Tags { get; set; } = [];
 
     public virtual ArticleDbo Article { get; set; }
 }

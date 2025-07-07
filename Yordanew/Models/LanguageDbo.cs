@@ -18,4 +18,6 @@ public class LanguageDbo {
     
     public virtual AppUser Author { get; set; }
     public virtual ICollection<ArticleDbo> Articles { get; set; } = [];
+    public virtual ICollection<PartOfSpeechDbo> PartsOfSpeech { get; set; } = [];
+
 }

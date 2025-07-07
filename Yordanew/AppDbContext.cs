@@ -12,4 +12,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<LexemeDbo> Lexemes { get; set; }
     public DbSet<FileDbo> Files { get; set; }
     public DbSet<FileRelationDbo> FileRelations { get; set; }
+    
+    public DbSet<PartOfSpeechDbo> PartsOfSpeech { get; set; }
+    public DbSet<GrammaticalCategoryDbo> Categories { get; set; }
+    public DbSet<GrammaticalFeatureDbo> Features { get; set; }
+    
 }

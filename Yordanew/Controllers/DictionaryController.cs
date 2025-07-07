@@ -47,6 +47,7 @@ public class DictionaryController(
         public Guid? Id { get; set; }
         public string? Path { get; set; } = "1.1";
         public string? Description { get; set; }
+        public string[]? Tags { get; set; } = [];
     }
 
     public class DictionaryEditRequest {
@@ -115,6 +116,7 @@ public class DictionaryController(
                     ArticleId = article.Id,
                     Description = new RichText(requestLexeme.Description ?? string.Empty),
                     Path = indexes?.ToList() ?? [1, 1],
+                    Tags = requestLexeme.Tags ?? []
                 };
                 article.AddLexeme(lexeme);
             }
@@ -141,7 +143,8 @@ public class DictionaryController(
                 Id = requestLexeme.Id ?? Guid.CreateVersion7(),
                 ArticleId = updated.Id,
                 Description = new RichText(requestLexeme.Description ?? ""),
-                Path = indexes?.ToList() ?? [1, 1]
+                Path = indexes?.ToList() ?? [1, 1],
+                Tags = requestLexeme.Tags ?? []
             };
             updated.AddLexeme(lexeme);
         }

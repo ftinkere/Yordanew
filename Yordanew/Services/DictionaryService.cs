@@ -20,6 +20,7 @@ public class DictionaryService(AppDbContext db) {
                 ArticleId = article.Id,
                 Description = lexeme.Description.Content,
                 Path = lexeme.Path.ToArray(),
+                Tags = lexeme.Tags.ToArray(),
             });
         }
         
@@ -94,11 +95,13 @@ public class DictionaryService(AppDbContext db) {
                     ArticleId = article.Id,
                     Description = lexeme.Description.Content,
                     Path = lexeme.Path.ToArray(),
+                    Tags = lexeme.Tags.ToArray(),
                 });
             }
             else {
                 dboLexeme.Description = lexeme.Description.Content;
                 dboLexeme.Path = lexeme.Path.ToArray();
+                dboLexeme.Tags = lexeme.Tags.ToArray();
             }
         }
 

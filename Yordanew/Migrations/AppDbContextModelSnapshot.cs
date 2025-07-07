@@ -297,6 +297,62 @@ namespace Yordanew.Migrations
                     b.ToTable("FileRelations");
                 });
 
+            modelBuilder.Entity("Yordanew.Models.GrammaticalCategoryDbo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PartOfSpeechId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PartOfSpeechId");
+
+                    b.ToTable("GrammaticalCategories");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.GrammaticalFeatureDbo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("GrammaticalFeatures");
+                });
+
             modelBuilder.Entity("Yordanew.Models.LanguageDbo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -352,11 +408,43 @@ namespace Yordanew.Migrations
                         .IsRequired()
                         .HasColumnType("integer[]");
 
+                    b.PrimitiveCollection<string[]>("Tags")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ArticleId");
 
                     b.ToTable("Lexemes");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.PartOfSpeechDbo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("LanguageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
+
+                    b.ToTable("PartsOfSpeech");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -432,6 +520,28 @@ namespace Yordanew.Migrations
                     b.Navigation("File");
                 });
 
+            modelBuilder.Entity("Yordanew.Models.GrammaticalCategoryDbo", b =>
+                {
+                    b.HasOne("Yordanew.Models.PartOfSpeechDbo", "PartOfSpeech")
+                        .WithMany("Categories")
+                        .HasForeignKey("PartOfSpeechId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PartOfSpeech");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.GrammaticalFeatureDbo", b =>
+                {
+                    b.HasOne("Yordanew.Models.GrammaticalCategoryDbo", "Category")
+                        .WithMany("Features")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("Yordanew.Models.LanguageDbo", b =>
                 {
                     b.HasOne("Yordanew.Models.AppUser", "Author")
@@ -454,6 +564,15 @@ namespace Yordanew.Migrations
                     b.Navigation("Article");
                 });
 
+            modelBuilder.Entity("Yordanew.Models.PartOfSpeechDbo", b =>
+                {
+                    b.HasOne("Yordanew.Models.LanguageDbo", "Language")
+                        .WithMany("PartsOfSpeech")
+                        .HasForeignKey("LanguageId");
+
+                    b.Navigation("Language");
+                });
+
             modelBuilder.Entity("Yordanew.Models.ArticleDbo", b =>
                 {
                     b.Navigation("Lexemes");
@@ -464,9 +583,21 @@ namespace Yordanew.Migrations
                     b.Navigation("Relations");
                 });
 
+            modelBuilder.Entity("Yordanew.Models.GrammaticalCategoryDbo", b =>
+                {
+                    b.Navigation("Features");
+                });
+
             modelBuilder.Entity("Yordanew.Models.LanguageDbo", b =>
                 {
                     b.Navigation("Articles");
+
+                    b.Navigation("PartsOfSpeech");
+                });
+
+            modelBuilder.Entity("Yordanew.Models.PartOfSpeechDbo", b =>
+                {
+                    b.Navigation("Categories");
                 });
 #pragma warning restore 612, 618
         }

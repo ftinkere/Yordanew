@@ -134,61 +134,199 @@ function addElement(item = null) {
     </UTree>
   </div>
 
-  <UModal title="Создать Часть речи" v-model:open="openedModals.pos" class="min-w-xl">
+  <UModal v-model:open="openedModals.pos" class="w-full max-w-2xl">
+    <template #header>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+          <UIcon name="i-lucide-speech" class="size-5 text-purple-400" />
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-white">Создать часть речи</h3>
+          <p class="text-white/60 text-sm">Добавление новой части речи в грамматику</p>
+        </div>
+      </div>
+    </template>
     <template #body="{ close }">
-      <div class="p-4">
-        <UForm :state @submit="e => { submitInsert(e); close() }" >
+      <div class="p-6">
+        <UForm :state @submit="e => { submitInsert(e); close() }" class="flex flex-col gap-6">
           <UFormField label="Название" name="name" required class="w-full">
-            <UInput v-model="state.name" class="w-full"/>
-          </UFormField>
-          <UFormField label="Код" name="code" required class="w-full">
-            <UInput v-model="state.code" class="w-full"/>
-          </UFormField>
-          <UFormField label="Описание" name="description" class="w-full">
-            <Editor v-model="state.description" class="w-full"/>
+            <UInput
+              v-model="state.name"
+              icon="i-lucide-text"
+              size="lg"
+              placeholder="Например: Существительное"
+              class="w-full"/>
           </UFormField>
 
-          <UButton type="submit" class="mt-4 w-full" variant="soft" color="success" :loading="disabled">Создать часть речи</UButton>
+          <UFormField label="Код" name="code" required class="w-full">
+            <UInput
+              v-model="state.code"
+              icon="i-lucide-code"
+              size="lg"
+              placeholder="Например: NOUN"
+              class="w-full font-mono"/>
+          </UFormField>
+
+          <UFormField label="Описание" name="description" class="w-full">
+            <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <Editor v-model="state.description" class="w-full"/>
+            </div>
+          </UFormField>
+
+          <div class="flex gap-3 pt-4">
+            <UButton
+              type="submit"
+              size="lg"
+              :loading="disabled"
+              class="flex-1 bg-linear-to-r from-purple-500/80 to-violet-500/80 hover:from-purple-500 hover:to-violet-500 border-purple-400/50">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-plus" class="size-5" />
+                <span class="font-semibold">Создать</span>
+              </div>
+            </UButton>
+            <UButton
+              size="lg"
+              variant="ghost"
+              color="white"
+              @click="close">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-x" class="size-5" />
+                <span>Отменить</span>
+              </div>
+            </UButton>
+          </div>
         </UForm>
       </div>
     </template>
   </UModal>
 
-  <UModal title="Создать Категорию" v-model:open="openedModals.category" class="w-lg">
+  <UModal v-model:open="openedModals.category" class="w-full max-w-2xl">
+    <template #header>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center">
+          <UIcon name="i-lucide-folder" class="size-5 text-violet-400" />
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-white">Создать категорию</h3>
+          <p class="text-white/60 text-sm">Добавление новой грамматической категории</p>
+        </div>
+      </div>
+    </template>
     <template #body="{ close }">
-      <div class="p-4">
-        <UForm :state @submit="e => { submitInsert(e); close() }">
+      <div class="p-6">
+        <UForm :state @submit="e => { submitInsert(e); close() }" class="flex flex-col gap-6">
           <UFormField label="Название" name="name" required class="w-full">
-            <UInput v-model="state.name" class="w-full"/>
-          </UFormField>
-          <UFormField label="Код" name="code" required class="w-full">
-            <UInput v-model="state.code" class="w-full"/>
-          </UFormField>
-          <UFormField label="Описание" name="description" class="w-full">
-            <Editor v-model="state.description" class="w-full"/>
+            <UInput
+              v-model="state.name"
+              icon="i-lucide-text"
+              size="lg"
+              placeholder="Например: Число"
+              class="w-full"/>
           </UFormField>
 
-          <UButton type="submit" class="mt-4 w-full" variant="soft" color="success" :loading="disabled">Создать категорию</UButton>
+          <UFormField label="Код" name="code" required class="w-full">
+            <UInput
+              v-model="state.code"
+              icon="i-lucide-code"
+              size="lg"
+              placeholder="Например: NUM"
+              class="w-full font-mono"/>
+          </UFormField>
+
+          <UFormField label="Описание" name="description" class="w-full">
+            <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <Editor v-model="state.description" class="w-full"/>
+            </div>
+          </UFormField>
+
+          <div class="flex gap-3 pt-4">
+            <UButton
+              type="submit"
+              size="lg"
+              :loading="disabled"
+              class="flex-1 bg-linear-to-r from-violet-500/80 to-purple-500/80 hover:from-violet-500 hover:to-purple-500 border-violet-400/50">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-plus" class="size-5" />
+                <span class="font-semibold">Создать</span>
+              </div>
+            </UButton>
+            <UButton
+              size="lg"
+              variant="ghost"
+              color="white"
+              @click="close">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-x" class="size-5" />
+                <span>Отменить</span>
+              </div>
+            </UButton>
+          </div>
         </UForm>
       </div>
     </template>
   </UModal>
 
-  <UModal title="Создать Значение" v-model:open="openedModals.feature" class="w-lg">
+  <UModal v-model:open="openedModals.feature" class="w-full max-w-2xl">
+    <template #header>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+          <UIcon name="i-lucide-tag" class="size-5 text-blue-400" />
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-white">Создать признак</h3>
+          <p class="text-white/60 text-sm">Добавление нового грамматического признака</p>
+        </div>
+      </div>
+    </template>
     <template #body="{ close }">
-      <div class="p-4">
-        <UForm :state @submit="e => { submitInsert(e); close() }">
+      <div class="p-6">
+        <UForm :state @submit="e => { submitInsert(e); close() }" class="flex flex-col gap-6">
           <UFormField label="Название" name="name" required class="w-full">
-            <UInput v-model="state.name" class="w-full"/>
-          </UFormField>
-          <UFormField label="Код" name="code" required class="w-full">
-            <UInput v-model="state.code" class="w-full"/>
-          </UFormField>
-          <UFormField label="Описание" name="description" class="w-full">
-            <Editor v-model="state.description" class="w-full"/>
+            <UInput
+              v-model="state.name"
+              icon="i-lucide-text"
+              size="lg"
+              placeholder="Например: Единственное"
+              class="w-full"/>
           </UFormField>
 
-          <UButton type="submit" class="mt-4 w-full" variant="soft" color="success" :loading="disabled">Создать значение</UButton>
+          <UFormField label="Код" name="code" required class="w-full">
+            <UInput
+              v-model="state.code"
+              icon="i-lucide-code"
+              size="lg"
+              placeholder="Например: SG"
+              class="w-full font-mono"/>
+          </UFormField>
+
+          <UFormField label="Описание" name="description" class="w-full">
+            <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <Editor v-model="state.description" class="w-full"/>
+            </div>
+          </UFormField>
+
+          <div class="flex gap-3 pt-4">
+            <UButton
+              type="submit"
+              size="lg"
+              :loading="disabled"
+              class="flex-1 bg-linear-to-r from-blue-500/80 to-cyan-500/80 hover:from-blue-500 hover:to-cyan-500 border-blue-400/50">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-plus" class="size-5" />
+                <span class="font-semibold">Создать</span>
+              </div>
+            </UButton>
+            <UButton
+              size="lg"
+              variant="ghost"
+              color="white"
+              @click="close">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-lucide-x" class="size-5" />
+                <span>Отменить</span>
+              </div>
+            </UButton>
+          </div>
         </UForm>
       </div>
     </template>

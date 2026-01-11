@@ -76,6 +76,9 @@ public class DictionaryController(
         return Inertia.Render("Dictionary/View", new {
             Language = language.ToDto(),
             Article = article.ToDto(),
+            Flash = new {
+                JustCreated = TempData["justCreated"]?.ToString()
+            }
         });
     }
     
@@ -122,6 +125,7 @@ public class DictionaryController(
             }
 
             await dictionaryService.Insert(article);
+            TempData["justCreated"] = article.Id.ToString();
             return Inertia.Location($"/dictionary/{article.Id}");
         }
 

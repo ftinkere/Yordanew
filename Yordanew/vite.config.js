@@ -19,7 +19,32 @@ export default defineConfig({
             ui: {
                 button: {
                     slots: {
-                        base: 'justify-center cursor-pointer',
+                        base: 'justify-center cursor-pointer rounded-full',
+                    }
+                },
+                input: {
+                    slots: {
+                        base: 'rounded-full',
+                    }
+                },
+                textarea: {
+                    slots: {
+                        base: 'rounded-2xl',
+                    }
+                },
+                select: {
+                    slots: {
+                        base: 'rounded-full',
+                    }
+                },
+                card: {
+                    slots: {
+                        base: 'rounded-3xl',
+                    }
+                },
+                modal: {
+                    slots: {
+                        base: 'rounded-3xl',
                     }
                 },
                 switch: {

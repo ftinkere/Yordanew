@@ -139,34 +139,142 @@ function submitInsert(event) {
 
 <template>
   <Layout>
-    <template #top-left>
-      <span class="font-yordan">Грамматика</span>
-    </template>
-
     <template #top-right>
       <Link :href="`/grammatic/${language.id}/`">
-        <UButton variant="soft" color="error">Отменить</UButton>
+        <UButton
+          icon="i-lucide-x"
+          variant="ghost"
+          color="white">
+          Отменить
+        </UButton>
       </Link>
     </template>
 
-    <div class="flex flex-row">
-      <GrammaticTree :parts-of-speech="partsOfSpeech" :disabled :submit-insert />
-      <div class="grow p-2">
-        <UForm v-if="partOfSpeech" :state @submit="submitUpdate">
-          <UFormField label="Название" name="name" required class="w-full">
-            <UInput v-model="state.name" class="w-full"/>
-          </UFormField>
-          <UFormField label="Код" name="code" required class="w-full">
-            <UInput v-model="state.code" class="w-full"/>
-          </UFormField>
-          <UFormField label="Описание" name="description" class="w-full">
-            <Editor v-model="state.description" class="w-full"/>
-          </UFormField>
+    <div class="flex flex-col gap-6 w-full">
+      <!-- Page Header -->
+      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl shadow-black/20">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-full bg-linear-to-br from-purple-500/20 to-violet-500/20 border border-purple-400/30 flex items-center justify-center">
+            <UIcon name="i-lucide-pencil" class="size-7 text-purple-400" />
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-white mb-1">Редактор грамматики</h1>
+            <p class="text-white/60">
+              Изменение структуры частей речи, категорий и признаков
+            </p>
+          </div>
+        </div>
+      </div>
 
-          <UButton type="submit" class="mt-4 w-full" variant="soft" color="info" :loading="disabled">Изменить</UButton>
-        </UForm>
-        <div v-else>
-          Выберите сущность для редактирования слева.
+      <!-- Editor Layout -->
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Tree Sidebar -->
+        <div class="lg:w-80 shrink-0">
+          <div class="lg:sticky lg:top-24">
+            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl shadow-black/20">
+              <div class="flex items-center gap-2 mb-4 pb-4 border-b border-white/10">
+                <UIcon name="i-lucide-list-tree" class="size-5 text-purple-400" />
+                <h2 class="text-xl font-semibold text-white">Структура</h2>
+              </div>
+              <GrammaticTree :parts-of-speech="partsOfSpeech" :disabled :submit-insert />
+            </div>
+          </div>
+        </div>
+
+        <!-- Editor Panel -->
+        <div class="flex-1 min-w-0">
+          <!-- Edit Form -->
+          <div v-if="partOfSpeech || category || feature"
+               class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-xl shadow-black/20">
+            <!-- Current Item Header -->
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+              <UIcon
+                :name="feature ? 'i-lucide-tag' : category ? 'i-lucide-folder' : 'i-lucide-speech'"
+                :class="feature ? 'text-blue-400' : category ? 'text-violet-400' : 'text-purple-400'"
+                class="size-6" />
+              <div>
+                <h2 class="text-2xl font-bold text-white">
+                  {{ feature ? 'Редактирование признака' : category ? 'Редактирование категории' : 'Редактирование части речи' }}
+                </h2>
+                <p class="text-white/60 text-sm mt-1">
+                  {{ state.name || 'Новая сущность' }}
+                  <span v-if="state.code" class="font-mono text-white/50">{{ state.code }}</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Form Fields -->
+            <UForm :state @submit="submitUpdate" class="flex flex-col gap-6">
+              <UFormField label="Название" name="name" required class="w-full">
+                <UInput
+                  v-model="state.name"
+                  icon="i-lucide-text"
+                  size="lg"
+                  placeholder="Например: Существительное"
+                  class="w-full"/>
+              </UFormField>
+
+              <UFormField label="Код" name="code" required class="w-full">
+                <UInput
+                  v-model="state.code"
+                  icon="i-lucide-code"
+                  size="lg"
+                  placeholder="Например: NOUN"
+                  class="w-full font-mono"/>
+              </UFormField>
+
+              <UFormField label="Описание" name="description" class="w-full">
+                <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                  <Editor v-model="state.description" class="w-full"/>
+                </div>
+              </UFormField>
+
+              <!-- Action Buttons -->
+              <div class="flex gap-3 pt-4">
+                <UButton
+                  type="submit"
+                  size="lg"
+                  :loading="disabled"
+                  class="flex-1 bg-linear-to-r from-purple-500/80 to-violet-500/80 hover:from-purple-500 hover:to-violet-500 border-purple-400/50">
+                  <div class="flex items-center gap-2">
+                    <UIcon name="i-lucide-save" class="size-5" />
+                    <span class="font-semibold">Сохранить</span>
+                  </div>
+                </UButton>
+
+                <Link :href="`/grammatic/${language.id}/`">
+                  <UButton
+                    size="lg"
+                    variant="ghost"
+                    color="white"
+                    class="w-full sm:w-auto">
+                    <div class="flex items-center gap-2">
+                      <UIcon name="i-lucide-x" class="size-5" />
+                      <span>Отменить</span>
+                    </div>
+                  </UButton>
+                </Link>
+              </div>
+            </UForm>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-12 shadow-xl shadow-black/20 text-center">
+            <div class="flex flex-col items-center gap-4">
+              <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
+                <UIcon name="i-lucide-mouse-pointer-click" class="size-8 text-white/50" />
+              </div>
+              <div>
+                <h3 class="text-xl font-semibold text-white mb-2">
+                  Выберите элемент для редактирования
+                </h3>
+                <p class="text-white/60">
+                  Используйте дерево структуры слева, чтобы выбрать<br>
+                  часть речи, категорию или признак для редактирования
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
